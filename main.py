@@ -1,5 +1,6 @@
 import Lexer
 import Parser
+import Transpiler
 
 code = '''
 x = 3
@@ -11,5 +12,6 @@ lexer.analyze()
 parser = Parser.Parser(lexer.tokens)
 parser.parse()
 
-for node in parser.nodes:
-    print(node)
+transpiler = Transpiler.Transpiler(parser.nodes)
+
+print(transpiler.javascript())
