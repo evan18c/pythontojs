@@ -11,6 +11,7 @@ class Nodes:
     DEFINITION = 'DEFINITION'
     RETURN = 'RETURN'
     IF = 'IF'
+    WHILE = 'WHILE'
 
     # Expressions
     BINARY = 'BINARY'
@@ -58,6 +59,12 @@ class NodeIf(Node):
         self.cond = cond
         self.body = body
         self.else_body = else_body
+
+class NodeWhile(Node):
+    def __init__(self, cond: Node, body: list[Node]):
+        super().__init__(Nodes.WHILE)
+        self.cond = cond
+        self.body = body
 
 class NodeBinary(Node):
     def __init__(self, left: Node, operation: TokenSubtypes, right: Node):
@@ -112,6 +119,10 @@ class Parser:
         # If
         if self.peek().type == TokenTypes.KEYWORD and self.peek().subtype == TokenSubtypes.KEYWORD_IF:
             return self.ParseIf()
+        
+        # While
+        if self.peek().type == TokenTypes.KEYWORD and self.peek().subtype == TokenSubtypes.KEYWORD_WHILE:
+            return self.ParseWhile()
         
         # New Line
         if self.peek().type == TokenTypes.EOL:
@@ -287,6 +298,28 @@ class Parser:
             self.indents -= 1
 
         return NodeIf(cond, body, else_body)
+    
+    def ParseWhile(self) -> Node:
+
+        self.consume() # while
+
+        cond = self.ParseExpression()
+
+        self.consume() # :
+
+        self.consume() # new line
+
+        # Parse Body
+        self.indents += 1
+        body = []
+        while self.GetLeadingTabs() == self.indents:
+            for _ in range(self.indents):
+                self.consume() # consume the tabs
+            body.append(self.ParseStatement())
+            self.SkipEOL()
+        self.indents -= 1
+
+        return NodeWhile(cond, body)
     
     # Helper Function: returns how many consecutive tabs are following.
     def GetLeadingTabs(self) -> int:
