@@ -10,6 +10,7 @@ class Nodes:
     ASSIGNMENT = 'ASSIGNMENT'
     DEFINITION = 'DEFINITION'
     RETURN = 'RETURN'
+    CALL = 'CALL'
 
     # Expressions
     BINARY = 'BINARY'
@@ -38,6 +39,12 @@ class NodeDefinition(Node):
         self.func = func
         self.args = args
         self.body = body
+
+class NodeCall(Node):
+    def __init__(self, func: str, args: list[Node]):
+        super().__init__(Nodes.CALL)
+        self.func = func
+        self.args = args
 
 class NodeReturn(Node):
     def __init__(self, expr: Node):
@@ -112,6 +119,17 @@ class Parser:
         # Token
         token = self.consume()
 
+        # Call
+        if token.type == TokenTypes.IDENTIFIER and self.peek().subtype == TokenSubtypes.DELIMITER_LPAREN:
+            func = token.value
+            self.consume() # (
+            args = []
+            while self.peek().subtype != TokenSubtypes.DELIMITER_LPAREN:
+                if len(args) != 0:
+                    self.consume() # ,
+                args.append(self.ParseExpression())
+            return NodeCall(func, args)
+            
         # Literal
         if token.type == TokenTypes.LITERAL:
             return NodeLiteral(token.value)
@@ -187,8 +205,9 @@ class Parser:
 
         self.indents += 1
         body = []
-        while self.peek().subtype == TokenSubtypes.DELIMITER_TAB:
-            self.consume() # tab
+        while self.GetLeadingTabs() == self.indents:
+            for _ in range(self.indents):
+                self.consume() # consume the tabs
             body.append(self.ParseStatement())
         self.indents -= 1
 
@@ -203,3 +222,10 @@ class Parser:
         self.consume() # new line
 
         return NodeReturn(expr)
+    
+    # Helper Function: returns how many consecutive tabs are following.
+    def GetLeadingTabs(self) -> int:
+        i = 0
+        while self.peek(i).subtype == TokenSubtypes.DELIMITER_TAB:
+            i += 1
+        return i

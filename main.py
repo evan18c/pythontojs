@@ -2,7 +2,7 @@ import Lexer
 import Parser
 import Transpiler
 
-code = open('code.py','r').read()
+code = open('code.py').read()
 
 lexer = Lexer.Lexer(code)
 lexer.analyze()
