@@ -50,6 +50,8 @@ class TokenSubtypes:
     DELIMITER_COMMENT = 'COMMENT'
     DELIMITER_LPAREN = 'LPAREN'
     DELIMITER_RPAREN = 'RPAREN'
+    DELIMITER_LSQUARE = 'LSQUARE'
+    DELIMITER_RSQUARE = 'RSQUARE'
     DELIMITER_COLON = 'COLON'
     DELIMITER_COMMA = 'COMMA'
     DELIMITER_DOT = 'DOT'
@@ -84,7 +86,7 @@ class Lexer:
     def scan(self) -> None:
 
         # Dictionary
-        dictionary_breaks = ' ():,.\n'
+        dictionary_breaks = ' ()[]:,.\n'
 
         # Current working string
         current = ''
@@ -168,6 +170,8 @@ class Lexer:
             '#': TokenSubtypes.DELIMITER_COMMENT,
             '(': TokenSubtypes.DELIMITER_LPAREN,
             ')': TokenSubtypes.DELIMITER_RPAREN,
+            '[': TokenSubtypes.DELIMITER_LSQUARE,
+            ']': TokenSubtypes.DELIMITER_RSQUARE,
             ':': TokenSubtypes.DELIMITER_COLON,
             ',': TokenSubtypes.DELIMITER_COMMA,
             '.': TokenSubtypes.DELIMITER_DOT

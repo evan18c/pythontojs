@@ -85,6 +85,9 @@ class Transpiler:
         
         if node.type == Nodes.ACCESS:
             return f'{self.nodeToJs(node.obj)}.{node.attr}'
+        
+        if node.type == Nodes.INDEX:
+            return f'{self.nodeToJs(node.obj)}[{self.nodeToJs(node.index)}]'
 
         # === Objects ===
         if node.type == Nodes.LITERAL:

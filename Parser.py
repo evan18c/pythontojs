@@ -19,6 +19,7 @@ class Nodes:
     BINARY = 'BINARY'
     CALL = 'CALL'
     ACCESS = 'ACCESS'
+    INDEX = 'INDEX'
 
     # Objects
     LITERAL = 'LITERAL'
@@ -94,6 +95,12 @@ class NodeAccess(Node):
         super().__init__(Nodes.ACCESS)
         self.obj = obj
         self.attr = attr
+
+class NodeIndex(Node):
+    def __init__(self, obj: Node, index: Node):
+        super().__init__(Nodes.INDEX)
+        self.obj = obj
+        self.index = index
 
 class NodeLiteral(Node):
     def __init__(self, value):
@@ -197,7 +204,7 @@ class Parser:
             self.consume() # )
         
         # Call + Access
-        while self.peek().subtype in [TokenSubtypes.DELIMITER_LPAREN, TokenSubtypes.DELIMITER_DOT]:
+        while self.peek().subtype in [TokenSubtypes.DELIMITER_LPAREN, TokenSubtypes.DELIMITER_LSQUARE, TokenSubtypes.DELIMITER_DOT]:
 
             # Call
             if self.peek().subtype == TokenSubtypes.DELIMITER_LPAREN:
@@ -209,6 +216,13 @@ class Parser:
                     args.append(self.ParseExpression())
                 self.consume() # )
                 node = NodeCall(node, args)
+
+            # Access
+            if self.peek().subtype == TokenSubtypes.DELIMITER_LSQUARE:
+                self.consume() # [
+                index = self.ParseExpression()
+                self.consume() # ]
+                return NodeIndex(node, index)
             
             # Access 
             if self.peek().subtype == TokenSubtypes.DELIMITER_DOT:
