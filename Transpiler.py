@@ -59,12 +59,17 @@ class Transpiler:
             cond = node.cond
             body = ''.join(self.nodeToJs(n) for n in node.body)
             else_body = ''.join(self.nodeToJs(n) for n in node.else_body)
-            return f'if({self.nodeToJs(cond)}){{{body}}}else{{{else_body}}}'
+            return f'if({self.nodeToJs(cond)}){{{body}}}else{{{else_body}}};'
         
         if node.type == Nodes.WHILE:
             cond = node.cond
             body = ''.join(self.nodeToJs(n) for n in node.body)
-            return f'while({self.nodeToJs(cond)}){{{body}}}'
+            return f'while({self.nodeToJs(cond)}){{{body}}};'
+        
+        if node.type == Nodes.STATEMENT_CALL:
+            func = node.func
+            args = ','.join(self.nodeToJs(arg) for arg in node.args)
+            return f'{func}({args});'
         
         # === Expressions ===
         if node.type == Nodes.BINARY:

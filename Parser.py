@@ -12,6 +12,7 @@ class Nodes:
     RETURN = 'RETURN'
     IF = 'IF'
     WHILE = 'WHILE'
+    STATEMENT_CALL = 'STATEMENT_CALL'
 
     # Expressions
     BINARY = 'BINARY'
@@ -42,12 +43,6 @@ class NodeDefinition(Node):
         self.args = args
         self.body = body
 
-class NodeCall(Node):
-    def __init__(self, func: str, args: list[Node]):
-        super().__init__(Nodes.CALL)
-        self.func = func
-        self.args = args
-
 class NodeReturn(Node):
     def __init__(self, expr: Node):
         super().__init__(Nodes.RETURN)
@@ -66,12 +61,24 @@ class NodeWhile(Node):
         self.cond = cond
         self.body = body
 
+class NodeStatementCall(Node):
+    def __init__(self, func: str, args: list[Node]):
+        super().__init__(Nodes.STATEMENT_CALL)
+        self.func = func
+        self.args = args
+
 class NodeBinary(Node):
     def __init__(self, left: Node, operation: TokenSubtypes, right: Node):
         super().__init__(Nodes.BINARY)
         self.left = left
         self.operation = operation
         self.right = right
+
+class NodeCall(Node):
+    def __init__(self, func: str, args: list[Node]):
+        super().__init__(Nodes.CALL)
+        self.func = func
+        self.args = args
 
 class NodeLiteral(Node):
     def __init__(self, value):
@@ -123,6 +130,10 @@ class Parser:
         # While
         if self.peek().type == TokenTypes.KEYWORD and self.peek().subtype == TokenSubtypes.KEYWORD_WHILE:
             return self.ParseWhile()
+        
+        # Statement Call
+        if self.peek().type == TokenTypes.IDENTIFIER and self.peek(1).subtype == TokenSubtypes.DELIMITER_LPAREN:
+            return self.ParseStatementCall()
         
         # New Line
         if self.peek().type == TokenTypes.EOL:
@@ -320,6 +331,23 @@ class Parser:
         self.indents -= 1
 
         return NodeWhile(cond, body)
+    
+    def ParseStatementCall(self) -> Node:
+        
+        func = self.consume().value
+
+        self.consume() # (
+
+        args = []
+        while self.peek().subtype != TokenSubtypes.DELIMITER_RPAREN:
+            if len(args) != 0:
+                self.consume() # ,
+            args.append(self.ParseExpression())
+        self.consume() # )
+
+        self.consume() # new line
+
+        return NodeStatementCall(func, args)
     
     # Helper Function: returns how many consecutive tabs are following.
     def GetLeadingTabs(self) -> int:
