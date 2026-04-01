@@ -3,7 +3,7 @@ import Parser
 import Transpiler
 
 code = '''
-
+a += beans
 '''
 
 lexer = Lexer.Lexer(code)

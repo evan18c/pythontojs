@@ -71,6 +71,9 @@ class Transpiler:
             args = ','.join(self.nodeToJs(arg) for arg in node.args)
             return f'{func}({args});'
         
+        if node.type == Nodes.STATEMENT_BINARY:
+            return f'{self.nodeToJs(node.left)}{operators[node.operation]}{self.nodeToJs(node.right)};'
+        
         # === Expressions ===
         if node.type == Nodes.BINARY:
             return f'({self.nodeToJs(node.left)}{operators[node.operation]}{self.nodeToJs(node.right)})'

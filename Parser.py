@@ -13,6 +13,7 @@ class Nodes:
     IF = 'IF'
     WHILE = 'WHILE'
     STATEMENT_CALL = 'STATEMENT_CALL'
+    STATEMENT_BINARY = 'STATEMENT_BINARY'
 
     # Expressions
     BINARY = 'BINARY'
@@ -67,6 +68,13 @@ class NodeStatementCall(Node):
         super().__init__(Nodes.STATEMENT_CALL)
         self.func = func
         self.args = args
+
+class NodeStatementBinary(Node):
+    def __init__(self, left: Node, operation: TokenSubtypes, right: Node):
+        super().__init__(Nodes.STATEMENT_BINARY)
+        self.left = left
+        self.operation = operation
+        self.right = right
 
 class NodeBinary(Node):
     def __init__(self, left: Node, operation: TokenSubtypes, right: Node):
@@ -150,6 +158,10 @@ class Parser:
         if self.peek().type == TokenTypes.DELIMITER and self.peek().subtype == TokenSubtypes.DELIMITER_COMMENT:
             return self.ParseComment()
         
+        # Statement Binary
+        if self.peek().type == TokenTypes.IDENTIFIER and self.peek(1).type == TokenTypes.OPERATOR:
+            return self.ParseStatementBinary()
+        
         # New Line
         if self.peek().type == TokenTypes.EOL:
             self.SkipEOL()
@@ -216,7 +228,10 @@ class Parser:
         while self.peek().subtype in [
             TokenSubtypes.OPERATOR_MULTIPLY,
             TokenSubtypes.OPERATOR_DIVIDE,
-            TokenSubtypes.OPERATOR_MODULO
+            TokenSubtypes.OPERATOR_MODULO,
+            TokenSubtypes.OPERATOR_MULTIPLYEQUAL,
+            TokenSubtypes.OPERATOR_DIVIDEEQUAL,
+            TokenSubtypes.OPERATOR_MODULOEQUAL
         ]:
             left = node
             op = self.consume().subtype
@@ -233,6 +248,8 @@ class Parser:
         while self.peek().subtype in [
             TokenSubtypes.OPERATOR_ADD,
             TokenSubtypes.OPERATOR_SUBTRACT,
+            TokenSubtypes.OPERATOR_ADDEQUAL,
+            TokenSubtypes.OPERATOR_SUBTRACTEQUAL,
             TokenSubtypes.OPERATOR_LESS,
             TokenSubtypes.OPERATOR_GREATER,
             TokenSubtypes.OPERATOR_LESSEQUAL,
@@ -379,6 +396,14 @@ class Parser:
         self.consume() # EOL
 
         return None
+    
+    def ParseStatementBinary(self) -> Node:
+
+        node = self.ParseExpression()
+
+        self.consume() # new line
+
+        return NodeStatementBinary(node.left, node.operation, node.right)
 
     # ========== HELPER ========== #
 
