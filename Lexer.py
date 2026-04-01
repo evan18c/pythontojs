@@ -87,6 +87,7 @@ class Lexer:
 
         # Current working string
         current = ''
+        bs = False
 
         # Iterate
         i = 0
@@ -96,7 +97,7 @@ class Lexer:
 
             char = self.text[i]
 
-            if char in dictionary_breaks:
+            if char in dictionary_breaks and not bs:
                 
                 if len(current) != 0:
                     self.tokens.append(Token('temp', None, current, line))
@@ -115,6 +116,9 @@ class Lexer:
                 cons_space += 1
             else:
                 cons_space = 0
+
+            if char == '"':
+                bs = not bs
 
             if cons_space == 4:
                 self.tokens.append(Token(TokenTypes.DELIMITER, TokenSubtypes.DELIMITER_TAB, None, line))
@@ -209,7 +213,7 @@ class Lexer:
                 elif is_string(token.value):
                     token.type = TokenTypes.LITERAL
                     token.subtype = TokenSubtypes.LITERAL_STRING
-                    token.value = token.value[1:-1]
+                    token.value = token.value
                 
                 elif is_integer(token.value):
                     token.type = TokenTypes.LITERAL

@@ -3,17 +3,19 @@ import Parser
 import Transpiler
 
 code = '''
-def fact(x):
-    if x == 1:
-        return 1
-    else:
-        return x * fact(x - 1)
 
-print(transpiler.code.beans.hello())
+def fuck(x):
+    return x + 3
+
+a = fuck("fuck")
+
 '''
 
 lexer = Lexer.Lexer(code)
 lexer.analyze()
+
+for token in lexer.tokens:
+    print(token)
 
 parser = Parser.Parser(lexer.tokens)
 parser.parse()
@@ -21,4 +23,7 @@ parser.parse()
 transpiler = Transpiler.Transpiler(parser.nodes)
 transpiler.transpile()
 
+print('-------------------- PYTHON --------------------')
+print(code)
+print('------------------ JAVASCRIPT ------------------')
 print(transpiler.code)

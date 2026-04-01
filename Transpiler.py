@@ -67,7 +67,7 @@ class Transpiler:
             return f'while({self.nodeToJs(cond)}){{{body}}};'
         
         if node.type == Nodes.STATEMENT_CALL:
-            func = node.func
+            func = self.nodeToJs(node.func)
             args = ','.join(self.nodeToJs(arg) for arg in node.args)
             return f'{func}({args});'
         

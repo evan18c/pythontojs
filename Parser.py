@@ -142,6 +142,10 @@ class Parser:
         if self.peek().type == TokenTypes.IDENTIFIER and self.peek(1).subtype == TokenSubtypes.DELIMITER_LPAREN:
             return self.ParseStatementCall()
         
+        # Access Statement Call
+        if self.peek().type == TokenTypes.IDENTIFIER and self.peek(1).subtype == TokenSubtypes.DELIMITER_DOT:
+            return self.ParseStatementAccessCall()
+        
         # New Line
         if self.peek().type == TokenTypes.EOL:
             self.SkipEOL()
@@ -372,6 +376,13 @@ class Parser:
 
         return NodeStatementCall(func, args)
     
+    def ParseStatementAccessCall(self) -> Node:
+        
+        node = self.ParseExpressionLevelZero()
+
+        self.consume() # new line
+
+        return NodeStatementCall(node.func, node.args)
 
     # ========== HELPER ========== #
 
