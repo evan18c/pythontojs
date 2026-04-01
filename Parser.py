@@ -144,7 +144,11 @@ class Parser:
         
         # Access Statement Call
         if self.peek().type == TokenTypes.IDENTIFIER and self.peek(1).subtype == TokenSubtypes.DELIMITER_DOT:
-            return self.ParseStatementAccessCall()
+            return self.ParseStatementCall()
+        
+        # Comment
+        if self.peek().type == TokenTypes.DELIMITER and self.peek().subtype == TokenSubtypes.DELIMITER_COMMENT:
+            return self.ParseComment()
         
         # New Line
         if self.peek().type == TokenTypes.EOL:
@@ -361,28 +365,20 @@ class Parser:
     
     def ParseStatementCall(self) -> Node:
         
-        func = self.consume().value
-
-        self.consume() # (
-
-        args = []
-        while self.peek().subtype != TokenSubtypes.DELIMITER_RPAREN:
-            if len(args) != 0:
-                self.consume() # ,
-            args.append(self.ParseExpression())
-        self.consume() # )
-
-        self.consume() # new line
-
-        return NodeStatementCall(func, args)
-    
-    def ParseStatementAccessCall(self) -> Node:
-        
         node = self.ParseExpressionLevelZero()
 
         self.consume() # new line
 
         return NodeStatementCall(node.func, node.args)
+    
+    def ParseComment(self) -> Node:
+
+        while self.peek().type != TokenTypes.EOL:
+            self.consume()
+
+        self.consume() # EOL
+
+        return None
 
     # ========== HELPER ========== #
 

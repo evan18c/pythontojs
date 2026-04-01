@@ -3,17 +3,13 @@ import Parser
 import Transpiler
 
 code = '''
-
-def fuck(x):
-    return x + 3
-
-a = fuck("fuck")
-
+asdf.print("asdf")
 '''
 
 lexer = Lexer.Lexer(code)
 lexer.analyze()
 
+print('-------------------- TOKENS --------------------')
 for token in lexer.tokens:
     print(token)
 
@@ -24,6 +20,6 @@ transpiler = Transpiler.Transpiler(parser.nodes)
 transpiler.transpile()
 
 print('-------------------- PYTHON --------------------')
-print(code)
+print(code.strip('\n'))
 print('------------------ JAVASCRIPT ------------------')
 print(transpiler.code)

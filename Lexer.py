@@ -47,6 +47,7 @@ class TokenSubtypes:
     OPERATOR_NOTEQUAL = 'NOTEQUAL'
     OPERATOR_EQUALEQUAL = 'EQUALEQUAL'
 
+    DELIMITER_COMMENT = 'COMMENT'
     DELIMITER_LPAREN = 'LPAREN'
     DELIMITER_RPAREN = 'RPAREN'
     DELIMITER_COLON = 'COLON'
@@ -117,7 +118,7 @@ class Lexer:
             else:
                 cons_space = 0
 
-            if char == '"':
+            if char == '"' or char == "'":
                 bs = not bs
 
             if cons_space == 4:
@@ -164,6 +165,7 @@ class Lexer:
         }
 
         delimiters = {
+            '#': TokenSubtypes.DELIMITER_COMMENT,
             '(': TokenSubtypes.DELIMITER_LPAREN,
             ')': TokenSubtypes.DELIMITER_RPAREN,
             ':': TokenSubtypes.DELIMITER_COLON,
