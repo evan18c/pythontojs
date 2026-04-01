@@ -71,4 +71,4 @@ class Transpiler:
         if node.type == Nodes.IDENTIFIER:
             return f'{node.id}'
         
-        return f'--> {node.type} <---'
+        return f'---> {node.type} <---'

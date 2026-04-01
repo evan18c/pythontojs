@@ -11,6 +11,7 @@ class Nodes:
     DEFINITION = 'DEFINITION'
     RETURN = 'RETURN'
     CALL = 'CALL'
+    IF = 'IF'
 
     # Expressions
     BINARY = 'BINARY'
@@ -34,7 +35,7 @@ class NodeAssignment(Node):
         self.expr = expr
     
 class NodeDefinition(Node):
-    def __init__(self, func: str, args: list[str], body:list[Node]):
+    def __init__(self, func: str, args: list[str], body: list[Node]):
         super().__init__(Nodes.DEFINITION)
         self.func = func
         self.args = args
@@ -50,6 +51,12 @@ class NodeReturn(Node):
     def __init__(self, expr: Node):
         super().__init__(Nodes.RETURN)
         self.expr = expr
+
+class NodeIf(Node):
+    def __init__(self, cond: Node, body: list[Node]):
+        super().__init__(Nodes.IF)
+        self.cond = cond
+        self.body = body
 
 class NodeBinary(Node):
     def __init__(self, left: Node, operation: TokenSubtypes, right: Node):
@@ -101,13 +108,16 @@ class Parser:
         if self.peek().type == TokenTypes.KEYWORD and self.peek().subtype == TokenSubtypes.KEYWORD_RETURN:
             return self.ParseReturn()
         
+        # If
+        if self.peek().type == TokenTypes.KEYWORD and self.peek().subtype == TokenSubtypes.KEYWORD_IF:
+            return self.ParseIf()
+        
         # New Line
         elif self.peek().type == TokenTypes.EOL:
             self.consume() # consume past EOL
 
         # Unknown Statement
-        print(self.peek().type, self.peek().subtype)
-        return None
+        raise SyntaxError(f'Unexpected {self.peek().type}, {self.peek().subtype}.')
         
     def ParseExpression(self) -> Node:
         return self.ParseExpressionLevelTwo()
@@ -152,7 +162,11 @@ class Parser:
 
         node = self.ParseExpressionLevelZero()
 
-        while self.peek().subtype in [TokenSubtypes.OPERATOR_MULTIPLY, TokenSubtypes.OPERATOR_DIVIDE, TokenSubtypes.OPERATOR_MODULO]:
+        while self.peek().subtype in [
+            TokenSubtypes.OPERATOR_MULTIPLY,
+            TokenSubtypes.OPERATOR_DIVIDE,
+            TokenSubtypes.OPERATOR_MODULO
+        ]:
             left = node
             op = self.consume().subtype
             right = self.ParseExpressionLevelZero()
@@ -165,7 +179,16 @@ class Parser:
 
         node = self.ParseExpressionLevelOne()
 
-        while self.peek().subtype in [TokenSubtypes.OPERATOR_ADD, TokenSubtypes.OPERATOR_SUBTRACT]:
+        while self.peek().subtype in [
+            TokenSubtypes.OPERATOR_ADD,
+            TokenSubtypes.OPERATOR_SUBTRACT,
+            TokenSubtypes.OPERATOR_LESS,
+            TokenSubtypes.OPERATOR_GREATER,
+            TokenSubtypes.OPERATOR_LESSEQUAL,
+            TokenSubtypes.OPERATOR_GREATEREQUAL,
+            TokenSubtypes.OPERATOR_NOTEQUAL,
+            TokenSubtypes.OPERATOR_EQUALEQUAL
+        ]:
             left = node
             op = self.consume().subtype
             right = self.ParseExpressionLevelOne()
@@ -210,7 +233,7 @@ class Parser:
         while self.GetLeadingTabs() == self.indents:
             for _ in range(self.indents):
                 self.consume() # consume the tabs
-            body.append(self.ParseStatement())
+            body.append(self.ParseStatement()) # consumes new lines
         self.indents -= 1
 
         return NodeDefinition(func, args, body)
@@ -224,6 +247,26 @@ class Parser:
         self.consume() # new line
 
         return NodeReturn(expr)
+    
+    def ParseIf(self) -> Node:
+
+        self.consume() # if
+
+        cond = self.ParseExpression()
+
+        self.consume() # :
+
+        self.consume() # new line
+
+        self.indents += 1
+        body = []
+        while self.GetLeadingTabs() == self.indents:
+            for _ in range(self.indents):
+                self.consume() # consume the tabs
+            body.append(self.ParseStatement()) # consumes new lines
+        self.indents -= 1
+
+        return NodeIf(cond, body)
     
     # Helper Function: returns how many consecutive tabs are following.
     def GetLeadingTabs(self) -> int:

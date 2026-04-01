@@ -82,7 +82,7 @@ class Lexer:
     def scan(self) -> None:
 
         # Dictionary
-        dictionary_breaks = ' =+-*/%(),\n'
+        dictionary_breaks = ' ():,\n'
 
         # Current working string
         current = ''
