@@ -2,7 +2,7 @@
 # Author: Evan Cassidy
 # Date: 3/31/2026
 
-from Lexer import Tokens, Types, Token
+from Lexer import TokenTypes, TokenSubtypes, Token
 
 class Nodes:
 
@@ -35,7 +35,7 @@ class NodeAssignment(Node):
         return self.__str__()
 
 class NodeBinary(Node):
-    def __init__(self, left: Node, operation: str, right: Node):
+    def __init__(self, left: Node, operation: TokenSubtypes, right: Node):
         super().__init__(Nodes.BINARY)
         self.left = left
         self.operation = operation
@@ -80,43 +80,54 @@ class Parser:
         return token
     
     def parse(self) -> None:
-        while self.peek().type != Tokens.EOF:
+        while self.peek().type != TokenTypes.EOF:
             self.nodes.append(self.ParseStatement())
     
     def ParseStatement(self) -> Node:
         
         # Assignment
-        if self.peek().type == Tokens.IDENTIFIER and self.peek(1).subtype == Types.OPERATOR_EQUAL:
+        if self.peek().type == TokenTypes.IDENTIFIER and self.peek(1).subtype == TokenSubtypes.OPERATOR_EQUAL:
             return self.ParseAssignment()
         
         # New Line
-        if self.peek().type == Tokens.EOL:
+        elif self.peek().type == TokenTypes.EOL:
             self.consume() # consume past EOL
+
+        # Unknown Statement
+        else:
+            raise SyntaxError("Unknown statement!")
         
     def ParseExpression(self) -> Node:
         return self.ParseExpressionLevelTwo()
 
 
-
     # Values parsed here
     def ParseExpressionLevelZero(self) -> Node:
 
+        # Token
+        token = self.consume()
+
         # Literal
-        if self.peek().type == Tokens.LITERAL:
-            token = self.consume()
+        if token.type == TokenTypes.LITERAL:
             return NodeLiteral(token.subtype, token.value)
         
         # Identifier
-        if self.peek().type == Tokens.IDENTIFIER:
-            token = self.consume()
+        if token.type == TokenTypes.IDENTIFIER:
             return NodeIdentifier(token.value)
+        
+        # Parentheses
+        if token.subtype == TokenSubtypes.DELIMITER_LPAREN:
+            node = self.ParseExpression()
+            self.consume() # )
+            return node
+
         
     # * / % parsed here
     def ParseExpressionLevelOne(self) -> Node:
 
         node = self.ParseExpressionLevelZero()
 
-        while self.peek().subtype in [Types.OPERATOR_MULTIPLY, Types.OPERATOR_DIVIDE, Types.OPERATOR_MODULO]:
+        while self.peek().subtype in [TokenSubtypes.OPERATOR_MULTIPLY, TokenSubtypes.OPERATOR_DIVIDE, TokenSubtypes.OPERATOR_MODULO]:
             left = node
             op = self.consume().subtype
             right = self.ParseExpressionLevelZero()
@@ -129,7 +140,7 @@ class Parser:
 
         node = self.ParseExpressionLevelOne()
 
-        while self.peek().subtype in [Types.OPERATOR_ADD, Types.OPERATOR_SUBTRACT]:
+        while self.peek().subtype in [TokenSubtypes.OPERATOR_ADD, TokenSubtypes.OPERATOR_SUBTRACT]:
             left = node
             op = self.consume().subtype
             right = self.ParseExpressionLevelOne()

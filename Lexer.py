@@ -2,7 +2,7 @@
 # Author: Evan Cassidy
 # Date: 3/31/2026
 
-class Tokens:
+class TokenTypes:
     KEYWORD = 'KEYWORD'
     LITERAL = 'LITERAL'
     IDENTIFIER = 'IDENTIFIER'
@@ -11,7 +11,7 @@ class Tokens:
     EOL = 'EOL'
     EOF = 'EOF'
 
-class Types:
+class TokenSubtypes:
     NONE = 'NONE'
 
     KEYWORD_DEF = 'DEF'
@@ -60,13 +60,13 @@ class Token:
         self.value = value
         self.line = line
     def __str__(self):
-        if self.type in [Tokens.LITERAL]:
+        if self.type in [TokenTypes.LITERAL]:
             return f'[{self.type}.{self.subtype}({self.value}) @ Line {self.line}]'
-        elif self.type in [Tokens.KEYWORD, Tokens.OPERATOR, Tokens.DELIMITER]:
+        elif self.type in [TokenTypes.KEYWORD, TokenTypes.OPERATOR, TokenTypes.DELIMITER]:
             return f'[{self.type}.{self.subtype} @ Line {self.line}]'
-        elif self.type in [Tokens.EOL, Tokens.EOF]:
+        elif self.type in [TokenTypes.EOL, TokenTypes.EOF]:
             return f'[{self.type} @ Line {self.line}]'
-        elif self.type in [Tokens.IDENTIFIER]:
+        elif self.type in [TokenTypes.IDENTIFIER]:
             return f'[{self.type}({self.value}) @ Line {self.line}]'
         else:
             return f'[UNKNOWN.{self.subtype}({self.value}) @ Line {self.line}]'
@@ -116,53 +116,53 @@ class Lexer:
                 cons_space = 0
 
             if cons_space == 4:
-                self.tokens.append(Token(Tokens.DELIMITER, Types.DELIMITER_TAB, None, line))
+                self.tokens.append(Token(TokenTypes.DELIMITER, TokenSubtypes.DELIMITER_TAB, None, line))
                 cons_space = 0
 
             i += 1
 
         # EOF
-        self.tokens.append(Token(Tokens.EOF, Types.NONE, None, line))
+        self.tokens.append(Token(TokenTypes.EOF, TokenSubtypes.NONE, None, line))
 
     # Pattern matches temp tokens into meaningful tokens
     def match(self):
 
         keywords = {
-            'def': Types.KEYWORD_DEF,
-            'return': Types.KEYWORD_RETURN,
-            'if': Types.KEYWORD_IF,
-            'elif': Types.KEYWORD_ELIF,
-            'else': Types.KEYWORD_ELSE,
-            'while': Types.KEYWORD_WHILE
+            'def': TokenSubtypes.KEYWORD_DEF,
+            'return': TokenSubtypes.KEYWORD_RETURN,
+            'if': TokenSubtypes.KEYWORD_IF,
+            'elif': TokenSubtypes.KEYWORD_ELIF,
+            'else': TokenSubtypes.KEYWORD_ELSE,
+            'while': TokenSubtypes.KEYWORD_WHILE
         }
 
         operators = {
-            '=': Types.OPERATOR_EQUAL, 
-            '+': Types.OPERATOR_ADD, 
-            '-': Types.OPERATOR_SUBTRACT, 
-            '*': Types.OPERATOR_MULTIPLY, 
-            '/': Types.OPERATOR_DIVIDE, 
-            '%': Types.OPERATOR_MODULO, 
+            '=': TokenSubtypes.OPERATOR_EQUAL, 
+            '+': TokenSubtypes.OPERATOR_ADD, 
+            '-': TokenSubtypes.OPERATOR_SUBTRACT, 
+            '*': TokenSubtypes.OPERATOR_MULTIPLY, 
+            '/': TokenSubtypes.OPERATOR_DIVIDE, 
+            '%': TokenSubtypes.OPERATOR_MODULO, 
 
-            '+=': Types.OPERATOR_ADDEQUAL, 
-            '-=': Types.OPERATOR_SUBTRACTEQUAL, 
-            '*=': Types.OPERATOR_MULTIPLYEQUAL, 
-            '/=': Types.OPERATOR_DIVIDEEQUAL, 
-            '%=': Types.OPERATOR_MODULOEQUAL, 
+            '+=': TokenSubtypes.OPERATOR_ADDEQUAL, 
+            '-=': TokenSubtypes.OPERATOR_SUBTRACTEQUAL, 
+            '*=': TokenSubtypes.OPERATOR_MULTIPLYEQUAL, 
+            '/=': TokenSubtypes.OPERATOR_DIVIDEEQUAL, 
+            '%=': TokenSubtypes.OPERATOR_MODULOEQUAL, 
 
-            '<': Types.OPERATOR_LESS, 
-            '>': Types.OPERATOR_GREATER, 
-            '<=': Types.OPERATOR_LESSEQUAL, 
-            '>=': Types.OPERATOR_GREATEREQUAL, 
-            '!=': Types.OPERATOR_NOTEQUAL, 
-            '==': Types.OPERATOR_EQUALEQUAL, 
+            '<': TokenSubtypes.OPERATOR_LESS, 
+            '>': TokenSubtypes.OPERATOR_GREATER, 
+            '<=': TokenSubtypes.OPERATOR_LESSEQUAL, 
+            '>=': TokenSubtypes.OPERATOR_GREATEREQUAL, 
+            '!=': TokenSubtypes.OPERATOR_NOTEQUAL, 
+            '==': TokenSubtypes.OPERATOR_EQUALEQUAL, 
         }
 
         delimiters = {
-            '(': Types.DELIMITER_LPAREN,
-            ')': Types.DELIMITER_RPAREN,
-            ':': Types.DELIMITER_COLON,
-            ',': Types.DELIMITER_COMMA,
+            '(': TokenSubtypes.DELIMITER_LPAREN,
+            ')': TokenSubtypes.DELIMITER_RPAREN,
+            ':': TokenSubtypes.DELIMITER_COLON,
+            ',': TokenSubtypes.DELIMITER_COMMA,
         }
 
         # string integer float bool
@@ -185,48 +185,48 @@ class Lexer:
             if token.type == 'temp':
 
                 if token.value in keywords:
-                    token.type = Tokens.KEYWORD
+                    token.type = TokenTypes.KEYWORD
                     token.subtype = keywords[token.value]
                     token.value = None
 
                 elif token.value in operators:
-                    token.type = Tokens.OPERATOR
+                    token.type = TokenTypes.OPERATOR
                     token.subtype = operators[token.value]
                     token.value = None
 
                 elif token.value == '\n':
-                    token.type = Tokens.EOL
+                    token.type = TokenTypes.EOL
                     token.subtype = None
                     token.value = None
 
                 elif token.value in delimiters:
-                    token.type = Tokens.DELIMITER
+                    token.type = TokenTypes.DELIMITER
                     token.subtype = delimiters[token.value]
                     token.value = None
 
                 elif is_string(token.value):
-                    token.type = Tokens.LITERAL
-                    token.subtype = Types.LITERAL_STRING
+                    token.type = TokenTypes.LITERAL
+                    token.subtype = TokenSubtypes.LITERAL_STRING
                     token.value = token.value[1:-1]
                 
                 elif is_integer(token.value):
-                    token.type = Tokens.LITERAL
-                    token.subtype = Types.LITERAL_INTEGER
+                    token.type = TokenTypes.LITERAL
+                    token.subtype = TokenSubtypes.LITERAL_INTEGER
                     token.value = int(token.value)
 
                 elif is_float(token.value):
-                    token.type = Tokens.LITERAL
-                    token.subtype = Types.LITERAL_FLOAT
+                    token.type = TokenTypes.LITERAL
+                    token.subtype = TokenSubtypes.LITERAL_FLOAT
                     token.value = float(token.value)
 
                 elif is_bool(token.value):
-                    token.type = Tokens.LITERAL
-                    token.subtype = Types.LITERAL_BOOL
+                    token.type = TokenTypes.LITERAL
+                    token.subtype = TokenSubtypes.LITERAL_BOOL
                     token.value = True if token.value == 'True' else False
 
                 else:
-                    token.type = Tokens.IDENTIFIER
-                    token.subtype = Types.NONE
+                    token.type = TokenTypes.IDENTIFIER
+                    token.subtype = TokenSubtypes.NONE
 
     # scan + match
     def analyze(self):
