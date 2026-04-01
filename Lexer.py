@@ -110,10 +110,10 @@ class Lexer:
             else:
                 current += char
 
-            if char == '\n':
+            if char == '\n' and not bs:
                 line += 1
 
-            if char == ' ':
+            if char == ' ' and not bs:
                 cons_space += 1
             else:
                 cons_space = 0
