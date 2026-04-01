@@ -5,6 +5,10 @@
 from Lexer import TokenSubtypes
 from Parser import Nodes, Node
 
+# Flags that can be passed to nodeToJs
+class Flags:
+    CLASS = 1
+
 class Transpiler:
     def __init__(self, ast: list[Node]):
         self.ast = ast
@@ -15,7 +19,8 @@ class Transpiler:
             self.code += self.nodeToJs(node)
     
     # Converts node to JavaScript
-    def nodeToJs(self, node: Node):
+    # Optional flags parameter to pass to objects that may need it
+    def nodeToJs(self, node: Node, flag=None):
 
         # === Helpers === 
         operators = {
@@ -44,7 +49,8 @@ class Transpiler:
         
         # === Statements ===
         if node.type == Nodes.ASSIGNMENT:
-            return f'var {node.var}={self.nodeToJs(node.expr)};'
+            type = 'static' if flag == Flags.CLASS else 'var'
+            return f'{type} {node.var}={self.nodeToJs(node.expr)};'
         
         if node.type == Nodes.DEFINITION:
             func = node.func
@@ -73,6 +79,11 @@ class Transpiler:
         
         if node.type == Nodes.STATEMENT_BINARY:
             return f'{self.nodeToJs(node.left)}{operators[node.operation]}{self.nodeToJs(node.right)};'
+        
+        if node.type == Nodes.CLASS:
+            name = node.name
+            body = ''.join(self.nodeToJs(n, Flags.CLASS) for n in node.body)
+            return f'class {name}{{{body}}};'
         
         # === Expressions ===
         if node.type == Nodes.BINARY:

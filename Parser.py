@@ -14,6 +14,7 @@ class Nodes:
     WHILE = 'WHILE'
     STATEMENT_CALL = 'STATEMENT_CALL'
     STATEMENT_BINARY = 'STATEMENT_BINARY'
+    CLASS = 'CLASS'
 
     # Expressions
     BINARY = 'BINARY'
@@ -79,6 +80,12 @@ class NodeStatementBinary(Node):
         self.left = left
         self.operation = operation
         self.right = right
+
+class NodeClass(Node):
+    def __init__(self, name: str, body: list[Node]):
+        super().__init__(Nodes.CLASS)
+        self.name = name
+        self.body = body
 
 class NodeBinary(Node):
     def __init__(self, left: Node, operation: TokenSubtypes, right: Node):
@@ -176,6 +183,10 @@ class Parser:
         # Statement Binary
         if self.peek().type == TokenTypes.IDENTIFIER and self.peek(1).type == TokenTypes.OPERATOR:
             return self.ParseStatementBinary()
+        
+        # Class
+        if self.peek().type == TokenTypes.KEYWORD and self.peek().subtype == TokenSubtypes.KEYWORD_CLASS:
+            return self.ParseClass()
         
         # New Line
         if self.peek().type == TokenTypes.EOL:
@@ -436,6 +447,28 @@ class Parser:
         self.consume() # new line
 
         return NodeStatementBinary(node.left, node.operation, node.right)
+    
+    def ParseClass(self) -> Node:
+
+        self.consume() # class
+
+        name = self.consume().value
+
+        self.consume() # :
+
+        self.consume() # new line
+
+        # Parse Body
+        self.indents += 1
+        body = []
+        while self.GetLeadingTabs() == self.indents:
+            for _ in range(self.indents):
+                self.consume() # consume the tabs
+            body.append(self.ParseStatement())
+            self.SkipEOL()
+        self.indents -= 1
+
+        return NodeClass(name, body)
 
     # ========== HELPER ========== #
 

@@ -20,6 +20,7 @@ class TokenSubtypes:
     KEYWORD_ELIF = 'ELIF'
     KEYWORD_ELSE = 'ELSE'
     KEYWORD_WHILE = 'WHILE'
+    KEYWORD_CLASS = 'CLASS'
 
     LITERAL_STRING = 'STRING'
     LITERAL_INTEGER = 'INTEGER'
@@ -141,7 +142,8 @@ class Lexer:
             'if': TokenSubtypes.KEYWORD_IF,
             'elif': TokenSubtypes.KEYWORD_ELIF,
             'else': TokenSubtypes.KEYWORD_ELSE,
-            'while': TokenSubtypes.KEYWORD_WHILE
+            'while': TokenSubtypes.KEYWORD_WHILE,
+            'class': TokenSubtypes.KEYWORD_CLASS
         }
 
         operators = {

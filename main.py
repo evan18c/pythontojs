@@ -2,13 +2,7 @@ import Lexer
 import Parser
 import Transpiler
 
-code = '''
-
-a = [1, 2, 3 + 99]
-
-print(a[2])
-
-'''
+code = open('code.py').read()
 
 lexer = Lexer.Lexer(code)
 lexer.analyze()
@@ -19,7 +13,6 @@ parser.parse()
 transpiler = Transpiler.Transpiler(parser.nodes)
 transpiler.transpile()
 
-print('-------------------- PYTHON --------------------')
-print(code.strip('\n'))
-print('------------------ JAVASCRIPT ------------------')
-print(transpiler.code)
+file = open('code.js', 'w')
+file.write(transpiler.code)
+file.close()
