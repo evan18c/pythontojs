@@ -4,16 +4,14 @@ import Transpiler
 
 code = '''
 
-a = b[0]
+a = [1, 2, 3 + 99]
+
+print(a[2])
 
 '''
 
 lexer = Lexer.Lexer(code)
 lexer.analyze()
-
-print('-------------------- TOKENS --------------------')
-for token in lexer.tokens:
-    print(token)
 
 parser = Parser.Parser(lexer.tokens)
 parser.parse()

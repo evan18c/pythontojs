@@ -25,6 +25,9 @@ class Nodes:
     LITERAL = 'LITERAL'
     IDENTIFIER = 'IDENTIFIER'
 
+    # Python Objects
+    LIST = 'LIST'
+
 class Node:
     def __init__(self, type: str):
         self.type = type
@@ -112,6 +115,11 @@ class NodeIdentifier(Node):
         super().__init__(Nodes.IDENTIFIER)
         self.id = id
 
+class NodeList(Node):
+    def __init__(self, arr: list):
+        super().__init__(Nodes.LIST)
+        self.arr = arr
+
 class Parser:
     def __init__(self, tokens: list):
         self.tokens = tokens
@@ -193,6 +201,16 @@ class Parser:
         # Literal
         if token.type == TokenTypes.LITERAL:
             node = NodeLiteral(token.value)
+
+        # Array
+        if token.subtype == TokenSubtypes.DELIMITER_LSQUARE:
+            arr = []
+            while self.peek().subtype != TokenSubtypes.DELIMITER_RSQUARE:
+                if len(arr) != 0:
+                    self.consume() # ,
+                arr.append(self.ParseExpression())
+            self.consume() # ]
+            node = NodeList(arr)
         
         # Identifier
         if token.type == TokenTypes.IDENTIFIER:

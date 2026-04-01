@@ -96,4 +96,8 @@ class Transpiler:
         if node.type == Nodes.IDENTIFIER:
             return f'{node.id}'
         
+        if node.type == Nodes.LIST:
+            els = ','.join(self.nodeToJs(el) for el in node.arr)
+            return f'[{els}]'
+        
         return f'---> {node.type} <---'
