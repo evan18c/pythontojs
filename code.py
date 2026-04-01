@@ -1,8 +1,3 @@
-def f(x):
-    if x > 2:
-        x = x + 3
-    else:
-        x = x + 7
-
-
-
+def relu(x):
+    if x < 0:
+        return 0

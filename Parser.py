@@ -272,7 +272,7 @@ class Parser:
 
         # Check for ELSE
         else_body = []
-        if self.peek(self.indents).subtype == TokenSubtypes.KEYWORD_ELSE:
+        if self.GetLeadingTabs() == self.indents and self.peek(self.indents).subtype == TokenSubtypes.KEYWORD_ELSE:
             for _ in range(self.indents):
                 self.consume() # consume the tabs
             self.consume() # else
