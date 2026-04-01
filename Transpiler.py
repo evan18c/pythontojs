@@ -58,7 +58,8 @@ class Transpiler:
         if node.type == Nodes.IF:
             cond = node.cond
             body = ''.join(self.nodeToJs(n) for n in node.body)
-            return f'if({self.nodeToJs(cond)}){{{body}}}'
+            else_body = ''.join(self.nodeToJs(n) for n in node.else_body)
+            return f'if({self.nodeToJs(cond)}){{{body}}}else{{{else_body}}}'
         
         # === Expressions ===
         if node.type == Nodes.BINARY:

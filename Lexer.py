@@ -121,7 +121,7 @@ class Lexer:
 
             i += 1
 
-        # EOF
+        # EOL + EOF
         self.tokens.append(Token(TokenTypes.EOF, TokenSubtypes.NONE, None, line))
 
     # Pattern matches temp tokens into meaningful tokens

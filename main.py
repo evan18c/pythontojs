@@ -7,6 +7,9 @@ code = open('code.py').read()
 lexer = Lexer.Lexer(code)
 lexer.analyze()
 
+for token in lexer.tokens:
+    print(token)
+
 parser = Parser.Parser(lexer.tokens)
 parser.parse()
 
