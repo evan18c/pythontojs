@@ -17,6 +17,7 @@ class Nodes:
     # Expressions
     BINARY = 'BINARY'
     CALL = 'CALL'
+    ACCESS = 'ACCESS'
 
     # Objects
     LITERAL = 'LITERAL'
@@ -62,7 +63,7 @@ class NodeWhile(Node):
         self.body = body
 
 class NodeStatementCall(Node):
-    def __init__(self, func: str, args: list[Node]):
+    def __init__(self, func: Node, args: list[Node]):
         super().__init__(Nodes.STATEMENT_CALL)
         self.func = func
         self.args = args
@@ -75,10 +76,16 @@ class NodeBinary(Node):
         self.right = right
 
 class NodeCall(Node):
-    def __init__(self, func: str, args: list[Node]):
+    def __init__(self, func: Node, args: list[Node]):
         super().__init__(Nodes.CALL)
         self.func = func
         self.args = args
+
+class NodeAccess(Node):
+    def __init__(self, obj: Node, attr: str):
+        super().__init__(Nodes.ACCESS)
+        self.obj = obj
+        self.attr = attr
 
 class NodeLiteral(Node):
     def __init__(self, value):
@@ -146,38 +153,51 @@ class Parser:
     def ParseExpression(self) -> Node:
         return self.ParseExpressionLevelTwo()
 
+    
+    # ========== EXPRESSIONS ========== #
 
     # Values parsed here
     def ParseExpressionLevelZero(self) -> Node:
 
-        # Token
+        # Vars
         token = self.consume()
+        node = None
 
-        # Call
-        if token.type == TokenTypes.IDENTIFIER and self.peek().subtype == TokenSubtypes.DELIMITER_LPAREN:
-            func = token.value
-            self.consume() # (
-            args = []
-            while self.peek().subtype != TokenSubtypes.DELIMITER_RPAREN:
-                if len(args) != 0:
-                    self.consume() # ,
-                args.append(self.ParseExpression())
-            self.consume() # )
-            return NodeCall(func, args)
-            
         # Literal
         if token.type == TokenTypes.LITERAL:
-            return NodeLiteral(token.value)
+            node = NodeLiteral(token.value)
         
         # Identifier
         if token.type == TokenTypes.IDENTIFIER:
-            return NodeIdentifier(token.value)
+            node = NodeIdentifier(token.value)
         
         # Parentheses
         if token.subtype == TokenSubtypes.DELIMITER_LPAREN:
             node = self.ParseExpression()
             self.consume() # )
-            return node
+        
+        # Call + Access
+        while self.peek().subtype in [TokenSubtypes.DELIMITER_LPAREN, TokenSubtypes.DELIMITER_DOT]:
+
+            # Call
+            if self.peek().subtype == TokenSubtypes.DELIMITER_LPAREN:
+                self.consume() # (
+                args = []
+                while self.peek().subtype != TokenSubtypes.DELIMITER_RPAREN:
+                    if len(args) != 0:
+                        self.consume() # ,
+                    args.append(self.ParseExpression())
+                self.consume() # )
+                node = NodeCall(node, args)
+            
+            # Access 
+            if self.peek().subtype == TokenSubtypes.DELIMITER_DOT:
+                self.consume() # .
+                attr = self.consume().value
+                node = NodeAccess(node, attr)
+            
+        # Return
+        return node
 
         
     # * / % parsed here
@@ -219,6 +239,9 @@ class Parser:
 
         return node
     
+
+    # ========== STATEMENTS ========== #
+
     def ParseAssignment(self) -> Node:
         
         var = self.consume().value
@@ -349,6 +372,9 @@ class Parser:
 
         return NodeStatementCall(func, args)
     
+
+    # ========== HELPER ========== #
+
     # Helper Function: returns how many consecutive tabs are following.
     def GetLeadingTabs(self) -> int:
         i = 0

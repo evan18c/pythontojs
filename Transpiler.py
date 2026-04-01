@@ -76,9 +76,12 @@ class Transpiler:
             return f'({self.nodeToJs(node.left)}{operators[node.operation]}{self.nodeToJs(node.right)})'
         
         if node.type == Nodes.CALL:
-            func = node.func
+            func = self.nodeToJs(node.func)
             args = ','.join(self.nodeToJs(arg) for arg in node.args)
             return f'{func}({args})'
+        
+        if node.type == Nodes.ACCESS:
+            return f'{self.nodeToJs(node.obj)}.{node.attr}'
 
         # === Objects ===
         if node.type == Nodes.LITERAL:

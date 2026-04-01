@@ -51,6 +51,7 @@ class TokenSubtypes:
     DELIMITER_RPAREN = 'RPAREN'
     DELIMITER_COLON = 'COLON'
     DELIMITER_COMMA = 'COMMA'
+    DELIMITER_DOT = 'DOT'
     DELIMITER_TAB = 'TAB'
 
 class Token:
@@ -82,7 +83,7 @@ class Lexer:
     def scan(self) -> None:
 
         # Dictionary
-        dictionary_breaks = ' ():,\n'
+        dictionary_breaks = ' ():,.\n'
 
         # Current working string
         current = ''
@@ -163,6 +164,7 @@ class Lexer:
             ')': TokenSubtypes.DELIMITER_RPAREN,
             ':': TokenSubtypes.DELIMITER_COLON,
             ',': TokenSubtypes.DELIMITER_COMMA,
+            '.': TokenSubtypes.DELIMITER_DOT
         }
 
         # string integer float bool
