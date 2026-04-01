@@ -13,4 +13,6 @@ parser.parse()
 transpiler = Transpiler.Transpiler(parser.nodes)
 transpiler.transpile()
 
-print(transpiler.code)
+js = open('code.js','w')
+js.write(transpiler.code)
+js.close()
