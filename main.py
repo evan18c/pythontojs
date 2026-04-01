@@ -13,3 +13,4 @@ parser.parse()
 transpiler = Transpiler.Transpiler(parser.nodes)
 transpiler.transpile()
 
+print(transpiler.code)

@@ -46,9 +46,8 @@ class NodeBinary(Node):
         return self.__str__()
 
 class NodeLiteral(Node):
-    def __init__(self, type: str, value):
+    def __init__(self, value):
         super().__init__(Nodes.LITERAL)
-        self.type = type
         self.value = value
     def __str__(self):
         return f'{self.value}'
@@ -109,7 +108,7 @@ class Parser:
 
         # Literal
         if token.type == TokenTypes.LITERAL:
-            return NodeLiteral(token.subtype, token.value)
+            return NodeLiteral(token.value)
         
         # Identifier
         if token.type == TokenTypes.IDENTIFIER:
