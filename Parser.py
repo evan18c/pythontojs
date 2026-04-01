@@ -10,11 +10,11 @@ class Nodes:
     ASSIGNMENT = 'ASSIGNMENT'
     DEFINITION = 'DEFINITION'
     RETURN = 'RETURN'
-    CALL = 'CALL'
     IF = 'IF'
 
     # Expressions
     BINARY = 'BINARY'
+    CALL = 'CALL'
 
     # Objects
     LITERAL = 'LITERAL'
@@ -113,8 +113,9 @@ class Parser:
             return self.ParseIf()
         
         # New Line
-        elif self.peek().type == TokenTypes.EOL:
-            self.consume() # consume past EOL
+        if self.peek().type == TokenTypes.EOL:
+            self.consume() # consume EOL
+            return None
 
         # Unknown Statement
         raise SyntaxError(f'Unexpected {self.peek().type}, {self.peek().subtype}.')

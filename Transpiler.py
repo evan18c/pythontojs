@@ -55,14 +55,19 @@ class Transpiler:
         if node.type == Nodes.RETURN:
             return f'return {self.nodeToJs(node.expr)};'
         
-        if node.type == Nodes.CALL:
-            func = node.func
-            args = ','.join(self.nodeToJs(arg) for arg in node.args)
-            return f'{func}({args})'
+        if node.type == Nodes.IF:
+            cond = node.cond
+            body = ''.join(self.nodeToJs(n) for n in node.body)
+            return f'if({self.nodeToJs(cond)}){{{body}}}'
         
         # === Expressions ===
         if node.type == Nodes.BINARY:
             return f'({self.nodeToJs(node.left)}{operators[node.operation]}{self.nodeToJs(node.right)})'
+        
+        if node.type == Nodes.CALL:
+            func = node.func
+            args = ','.join(self.nodeToJs(arg) for arg in node.args)
+            return f'{func}({args})'
 
         # === Objects ===
         if node.type == Nodes.LITERAL:
