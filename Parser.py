@@ -115,7 +115,7 @@ class Parser:
         
         # New Line
         if self.peek().type == TokenTypes.EOL:
-            self.consume() # consume EOL
+            self.SkipEOL()
             return None
 
         # Unknown Statement
@@ -234,7 +234,8 @@ class Parser:
         while self.GetLeadingTabs() == self.indents:
             for _ in range(self.indents):
                 self.consume() # consume the tabs
-            body.append(self.ParseStatement()) # consumes new lines
+            body.append(self.ParseStatement())
+            self.SkipEOL()
         self.indents -= 1
 
         return NodeDefinition(func, args, body)
@@ -265,7 +266,8 @@ class Parser:
         while self.GetLeadingTabs() == self.indents:
             for _ in range(self.indents):
                 self.consume() # consume the tabs
-            body.append(self.ParseStatement()) # consumes new lines
+            body.append(self.ParseStatement())
+            self.SkipEOL()
         self.indents -= 1
 
         # Check for ELSE
@@ -280,7 +282,8 @@ class Parser:
             while self.GetLeadingTabs() == self.indents:
                 for _ in range(self.indents):
                     self.consume() # consume the tabs
-                else_body.append(self.ParseStatement()) # consumes new lines
+                else_body.append(self.ParseStatement())
+                self.SkipEOL()
             self.indents -= 1
 
         return NodeIf(cond, body, else_body)
@@ -291,3 +294,8 @@ class Parser:
         while self.peek(i).subtype == TokenSubtypes.DELIMITER_TAB:
             i += 1
         return i
+    
+    # Helper Function: skips over every EOL token
+    def SkipEOL(self) -> None:
+        while self.peek().type == TokenTypes.EOL:
+            self.consume()
