@@ -8,6 +8,8 @@ class Nodes:
 
     # Statements
     ASSIGNMENT = 'ASSIGNMENT'
+    DEFINITION = 'DEFINITION'
+    RETURN = 'RETURN'
 
     # Expressions
     BINARY = 'BINARY'
@@ -29,10 +31,18 @@ class NodeAssignment(Node):
         super().__init__(Nodes.ASSIGNMENT)
         self.var = var
         self.expr = expr
-    def __str__(self):
-        return f'{self.var} = {self.expr}'
-    def __repr__(self):
-        return self.__str__()
+    
+class NodeDefinition(Node):
+    def __init__(self, func: str, args: list[str], body:list[Node]):
+        super().__init__(Nodes.DEFINITION)
+        self.func = func
+        self.args = args
+        self.body = body
+
+class NodeReturn(Node):
+    def __init__(self, expr: Node):
+        super().__init__(Nodes.RETURN)
+        self.expr = expr
 
 class NodeBinary(Node):
     def __init__(self, left: Node, operation: TokenSubtypes, right: Node):
@@ -40,35 +50,23 @@ class NodeBinary(Node):
         self.left = left
         self.operation = operation
         self.right = right
-    def __str__(self):
-        return f'{self.left} {self.operation} {self.right}'
-    def __repr__(self):
-        return self.__str__()
 
 class NodeLiteral(Node):
     def __init__(self, value):
         super().__init__(Nodes.LITERAL)
         self.value = value
-    def __str__(self):
-        return f'{self.value}'
-    def __repr__(self):
-        return self.__str__()
 
 class NodeIdentifier(Node):
     def __init__(self, id: str):
         super().__init__(Nodes.IDENTIFIER)
         self.id = id
-    def __str__(self):
-        return f'{self.id}'
-    def __repr__(self):
-        return self.__str__()
-
 
 class Parser:
     def __init__(self, tokens: list):
         self.tokens = tokens
         self.pos = 0
         self.nodes = []
+        self.indents = 0
 
     def peek(self, n: int = 0) -> Token:
         return self.tokens[self.pos + n]
@@ -88,13 +86,21 @@ class Parser:
         if self.peek().type == TokenTypes.IDENTIFIER and self.peek(1).subtype == TokenSubtypes.OPERATOR_EQUAL:
             return self.ParseAssignment()
         
+        # Definition
+        if self.peek().type == TokenTypes.KEYWORD and self.peek().subtype == TokenSubtypes.KEYWORD_DEF:
+            return self.ParseDefinition()
+        
+        # Return
+        if self.peek().type == TokenTypes.KEYWORD and self.peek().subtype == TokenSubtypes.KEYWORD_RETURN:
+            return self.ParseReturn()
+        
         # New Line
         elif self.peek().type == TokenTypes.EOL:
             self.consume() # consume past EOL
 
         # Unknown Statement
-        else:
-            raise SyntaxError("Unknown statement!")
+        print(self.peek().type, self.peek().subtype)
+        return None
         
     def ParseExpression(self) -> Node:
         return self.ParseExpressionLevelTwo()
@@ -158,3 +164,42 @@ class Parser:
         self.consume() # new line
 
         return NodeAssignment(var, expr)
+    
+    def ParseDefinition(self) -> Node:
+
+        self.consume() # def
+
+        func = self.consume().value
+
+        self.consume() # (
+
+        args = []
+        while self.peek().subtype != TokenSubtypes.DELIMITER_RPAREN:
+            if len(args) != 0:
+                self.consume() # ,
+            args.append(self.consume().value)
+        
+        self.consume() # )
+        
+        self.consume() # :
+
+        self.consume() # new line
+
+        self.indents += 1
+        body = []
+        while self.peek().subtype == TokenSubtypes.DELIMITER_TAB:
+            self.consume() # tab
+            body.append(self.ParseStatement())
+        self.indents -= 1
+
+        return NodeDefinition(func, args, body)
+
+    def ParseReturn(self) -> Node:
+
+        self.consume() # return
+
+        expr = self.ParseExpression()
+
+        self.consume() # new line
+
+        return NodeReturn(expr)

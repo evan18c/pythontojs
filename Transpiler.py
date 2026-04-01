@@ -46,6 +46,15 @@ class Transpiler:
         if node.type == Nodes.ASSIGNMENT:
             return f'var {node.var}={self.nodeToJs(node.expr)};'
         
+        if node.type == Nodes.DEFINITION:
+            func = node.func
+            args = ','.join(node.args)
+            body = ''.join(self.nodeToJs(n) for n in node.body)
+            return f'var {func}=function({args}){{{body}}}'
+        
+        if node.type == Nodes.RETURN:
+            return f'return {self.nodeToJs(node.expr)};'
+        
         # === Expressions ===
         if node.type == Nodes.BINARY:
             return f'({self.nodeToJs(node.left)}{operators[node.operation]}{self.nodeToJs(node.right)})'
