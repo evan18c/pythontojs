@@ -50,10 +50,15 @@ class Transpiler:
             func = node.func
             args = ','.join(node.args)
             body = ''.join(self.nodeToJs(n) for n in node.body)
-            return f'var {func}=function({args}){{{body}}}'
+            return f'var {func}=function({args}){{{body}}};'
         
         if node.type == Nodes.RETURN:
             return f'return {self.nodeToJs(node.expr)};'
+        
+        if node.type == Nodes.CALL:
+            func = node.func
+            args = ','.join(self.nodeToJs(arg) for arg in node.args)
+            return f'{func}({args})'
         
         # === Expressions ===
         if node.type == Nodes.BINARY:

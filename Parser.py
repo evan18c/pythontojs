@@ -121,13 +121,15 @@ class Parser:
 
         # Call
         if token.type == TokenTypes.IDENTIFIER and self.peek().subtype == TokenSubtypes.DELIMITER_LPAREN:
+            print('function call found')
             func = token.value
             self.consume() # (
             args = []
-            while self.peek().subtype != TokenSubtypes.DELIMITER_LPAREN:
+            while self.peek().subtype != TokenSubtypes.DELIMITER_RPAREN:
                 if len(args) != 0:
                     self.consume() # ,
                 args.append(self.ParseExpression())
+            self.consume() # )
             return NodeCall(func, args)
             
         # Literal
