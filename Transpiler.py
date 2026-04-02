@@ -14,7 +14,13 @@ class Transpiler:
         self.ast = ast
         self.code = ''
 
+    # Adds Python functions to JavaScript
+    def builtin(self) -> None:
+        self.code += 'var range=function(n){return Array.from({length:n},(_,i)=>i);};' # range
+
+    # Converts AST to JavaScript
     def transpile(self) -> None:
+        self.builtin()
         for node in self.ast:
             self.code += self.nodeToJs(node)
     
