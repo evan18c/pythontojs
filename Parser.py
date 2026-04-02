@@ -205,6 +205,10 @@ class Parser:
         if self.peek().type == TokenTypes.KEYWORD and self.peek().subtype == TokenSubtypes.KEYWORD_IMPORT:
             return self.ParseImport()
         
+        # From
+        if self.peek().type == TokenTypes.KEYWORD and self.peek().subtype == TokenSubtypes.KEYWORD_FROM:
+            return self.ParseFrom()
+        
         # New Line
         if self.peek().type == TokenTypes.EOL:
             self.SkipEOL()
@@ -530,13 +534,15 @@ class Parser:
         return NodeFor(var, iter, body)
     
     def ParseImport(self) -> Node:
-
-        self.consume() # import
-
-        self.consume().value # temp do nothing
-
-        self.consume() # new line
-
+        while self.peek().type != TokenTypes.EOL:
+            self.consume()
+        self.consume()
+        return None
+    
+    def ParseFrom(self) -> Node:
+        while self.peek().type != TokenTypes.EOL:
+            self.consume()
+        self.consume()
         return None
 
     # ========== HELPER ========== #

@@ -24,6 +24,7 @@ class TokenSubtypes:
     KEYWORD_FOR = 'FOR'
     KEYWORD_IN = 'IN'
     KEYWORD_IMPORT = 'IMPORT'
+    KEYWORD_FROM = 'FROM'
 
     LITERAL_STRING = 'STRING'
     LITERAL_INTEGER = 'INTEGER'
@@ -134,6 +135,7 @@ class Lexer:
             i += 1
 
         # EOL + EOF
+        self.tokens.append(Token(TokenTypes.EOL, TokenSubtypes.NONE, None, line))
         self.tokens.append(Token(TokenTypes.EOF, TokenSubtypes.NONE, None, line))
 
     # Pattern matches temp tokens into meaningful tokens
@@ -149,7 +151,8 @@ class Lexer:
             'class': TokenSubtypes.KEYWORD_CLASS,
             'for': TokenSubtypes.KEYWORD_FOR,
             'in': TokenSubtypes.KEYWORD_IN,
-            'import': TokenSubtypes.KEYWORD_IMPORT
+            'import': TokenSubtypes.KEYWORD_IMPORT,
+            'from': TokenSubtypes.KEYWORD_FROM
         }
 
         operators = {
