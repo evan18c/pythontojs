@@ -56,7 +56,13 @@ class Transpiler:
             func = node.func
             args = ','.join(node.args)
             body = ''.join(self.nodeToJs(n) for n in node.body)
-            return f'var {func}=function({args}){{{body}}};'
+            if flag == Flags.CLASS:
+                if func == '__init__':
+                    func = 'constructor'
+                args = ','.join(node.args[1:])
+                return f'{func}({args}){{{body}}};'
+            else:
+                return f'var {func}=function({args}){{{body}}};'
         
         if node.type == Nodes.RETURN:
             return f'return {self.nodeToJs(node.expr)};'
@@ -87,7 +93,10 @@ class Transpiler:
         
         # === Expressions ===
         if node.type == Nodes.BINARY:
-            return f'({self.nodeToJs(node.left)}{operators[node.operation]}{self.nodeToJs(node.right)})'
+            if node.statement:
+                return f'{self.nodeToJs(node.left)}{operators[node.operation]}{self.nodeToJs(node.right)};'
+            else:
+                return f'({self.nodeToJs(node.left)}{operators[node.operation]}{self.nodeToJs(node.right)})'
         
         if node.type == Nodes.CALL:
             func = self.nodeToJs(node.func)

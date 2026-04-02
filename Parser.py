@@ -30,8 +30,9 @@ class Nodes:
     LIST = 'LIST'
 
 class Node:
-    def __init__(self, type: str):
+    def __init__(self, type: str, statement: bool):
         self.type = type
+        self.statement = statement
     def __str__(self):
         return f'{self.type}'
     def __repr__(self):
@@ -39,92 +40,92 @@ class Node:
 
 class NodeAssignment(Node):
     def __init__(self, var: str, expr: Node):
-        super().__init__(Nodes.ASSIGNMENT)
+        super().__init__(Nodes.ASSIGNMENT, True)
         self.var = var
         self.expr = expr
     
 class NodeDefinition(Node):
     def __init__(self, func: str, args: list[str], body: list[Node]):
-        super().__init__(Nodes.DEFINITION)
+        super().__init__(Nodes.DEFINITION, True)
         self.func = func
         self.args = args
         self.body = body
 
 class NodeReturn(Node):
     def __init__(self, expr: Node):
-        super().__init__(Nodes.RETURN)
+        super().__init__(Nodes.RETURN, True)
         self.expr = expr
 
 class NodeIf(Node):
     def __init__(self, cond: Node, body: list[Node], else_body: list[Node]):
-        super().__init__(Nodes.IF)
+        super().__init__(Nodes.IF, True)
         self.cond = cond
         self.body = body
         self.else_body = else_body
 
 class NodeWhile(Node):
     def __init__(self, cond: Node, body: list[Node]):
-        super().__init__(Nodes.WHILE)
+        super().__init__(Nodes.WHILE, True)
         self.cond = cond
         self.body = body
 
 class NodeStatementCall(Node):
     def __init__(self, func: Node, args: list[Node]):
-        super().__init__(Nodes.STATEMENT_CALL)
+        super().__init__(Nodes.STATEMENT_CALL, True)
         self.func = func
         self.args = args
 
 class NodeStatementBinary(Node):
     def __init__(self, left: Node, operation: TokenSubtypes, right: Node):
-        super().__init__(Nodes.STATEMENT_BINARY)
+        super().__init__(Nodes.STATEMENT_BINARY, True)
         self.left = left
         self.operation = operation
         self.right = right
 
 class NodeClass(Node):
     def __init__(self, name: str, body: list[Node]):
-        super().__init__(Nodes.CLASS)
+        super().__init__(Nodes.CLASS, True)
         self.name = name
         self.body = body
 
 class NodeBinary(Node):
     def __init__(self, left: Node, operation: TokenSubtypes, right: Node):
-        super().__init__(Nodes.BINARY)
+        super().__init__(Nodes.BINARY, False)
         self.left = left
         self.operation = operation
         self.right = right
 
 class NodeCall(Node):
     def __init__(self, func: Node, args: list[Node]):
-        super().__init__(Nodes.CALL)
+        super().__init__(Nodes.CALL, False)
         self.func = func
         self.args = args
 
 class NodeAccess(Node):
     def __init__(self, obj: Node, attr: str):
-        super().__init__(Nodes.ACCESS)
+        super().__init__(Nodes.ACCESS, False)
         self.obj = obj
         self.attr = attr
 
 class NodeIndex(Node):
     def __init__(self, obj: Node, index: Node):
-        super().__init__(Nodes.INDEX)
+        super().__init__(Nodes.INDEX, False)
         self.obj = obj
         self.index = index
 
 class NodeLiteral(Node):
     def __init__(self, value):
-        super().__init__(Nodes.LITERAL)
+        super().__init__(Nodes.LITERAL, False)
         self.value = value
 
 class NodeIdentifier(Node):
     def __init__(self, id: str):
-        super().__init__(Nodes.IDENTIFIER)
+        super().__init__(Nodes.IDENTIFIER, False)
         self.id = id
 
 class NodeList(Node):
     def __init__(self, arr: list):
-        super().__init__(Nodes.LIST)
+        super().__init__(Nodes.LIST, False)
         self.arr = arr
 
 class Parser:
@@ -174,7 +175,7 @@ class Parser:
         
         # Access Statement Call
         if self.peek().type == TokenTypes.IDENTIFIER and self.peek(1).subtype == TokenSubtypes.DELIMITER_DOT:
-            return self.ParseStatementCall()
+            return self.ParseExpressionStatement()
         
         # Comment
         if self.peek().type == TokenTypes.DELIMITER and self.peek().subtype == TokenSubtypes.DELIMITER_COMMENT:
@@ -289,6 +290,7 @@ class Parser:
         node = self.ParseExpressionLevelOne()
 
         while self.peek().subtype in [
+            TokenSubtypes.OPERATOR_EQUAL,
             TokenSubtypes.OPERATOR_ADD,
             TokenSubtypes.OPERATOR_SUBTRACT,
             TokenSubtypes.OPERATOR_ADDEQUAL,
@@ -469,6 +471,17 @@ class Parser:
         self.indents -= 1
 
         return NodeClass(name, body)
+    
+    # This should ideally replace statement_call and statement_binary
+    def ParseExpressionStatement(self) -> Node:
+        
+        node = self.ParseExpression()
+
+        self.consume() # new line
+
+        node.statement = True
+
+        return node
 
     # ========== HELPER ========== #
 
