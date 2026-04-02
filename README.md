@@ -1,6 +1,8 @@
+<br>
 <div align="center">
-    <img src="assets/logo.png" alt="Logo" width="128" height="128">
-    <h1>py2js</h1>
+ <img src="assets/logo.png" alt="Logo" width="128" height="128">
+
+ # py2js
 </div>
 
 ## About
