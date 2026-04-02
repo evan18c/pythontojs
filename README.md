@@ -3,6 +3,10 @@
  <img src="assets/logo.png" alt="Logo" width="128" height="128">
 
  # py2js
+
+ <p align="center">
+  Bringing Python to JavaScript.
+ </p>
 </div>
 
 ## About
