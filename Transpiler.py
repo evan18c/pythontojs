@@ -73,7 +73,6 @@ class Transpiler:
             func = node.func
             self.functions.append(func)
             if Flags.CLASS in flags and func == '__init__':
-                func = 'constructor'
                 args = ','.join(node.args[1:])
                 body = ''.join(self.nodeToJs(n, flags.copy()) for n in node.body)    # edit here
                 return f'{func}({args}){{{body}}};'
@@ -82,7 +81,6 @@ class Transpiler:
                 body = ''.join(self.nodeToJs(n, flags.copy() + [Flags.METHOD]) for n in node.body)
                 return f'{func}({args}){{{body}}};'
             else:
-                print('not constructor:', func)
                 args = ','.join(node.args)
                 body = ''.join(self.nodeToJs(n, flags.copy() + [Flags.METHOD]) for n in node.body)
                 return f'{func}({args}){{{body}}};'
