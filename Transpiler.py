@@ -13,6 +13,8 @@ class Transpiler:
     def __init__(self, ast: list[Node]):
         self.ast = ast
         self.code = ''
+        self.functions = []
+        self.classes = []
 
     # Adds Python functions to JavaScript
     def builtin(self) -> None:
@@ -22,11 +24,11 @@ class Transpiler:
     def transpile(self) -> None:
         self.builtin()
         for node in self.ast:
-            self.code += self.nodeToJs(node)
+            self.code += self.nodeToJs(node, None)
     
     # Converts node to JavaScript
     # Optional flags parameter to pass to objects that may need it
-    def nodeToJs(self, node: Node, flag=None):
+    def nodeToJs(self, node: Node, flags):
 
         # === Helpers === 
         operators = {
@@ -56,16 +58,17 @@ class Transpiler:
 
         # === Statements ===
         if node.type == Nodes.ASSIGNMENT:
-            type = 'static' if flag == Flags.CLASS else 'var'
+            type = 'static' if flags == Flags.CLASS else 'var'
             var = node.var
-            expr = self.nodeToJs(node.expr)
+            expr = self.nodeToJs(node.expr, flags)
             return f'{type} {var}={expr};'
         
         if node.type == Nodes.DEFINITION:
             func = node.func
+            self.functions.append(func)
             args = ','.join(node.args)
-            body = ''.join(self.nodeToJs(n) for n in node.body)
-            if flag == Flags.CLASS:
+            body = ''.join(self.nodeToJs(n, flags) for n in node.body)
+            if flags == Flags.CLASS:
                 if func == '__init__':
                     func = 'constructor'
                 args = ','.join(node.args[1:])
@@ -74,69 +77,73 @@ class Transpiler:
                 return f'var {func}=function({args}){{{body}}};'
         
         if node.type == Nodes.RETURN:
-            expr = self.nodeToJs(node.expr)
+            expr = self.nodeToJs(node.expr, flags)
             return f'return {expr};'
         
         if node.type == Nodes.IF:
-            cond = self.nodeToJs(node.cond)
-            body = ''.join(self.nodeToJs(n) for n in node.body)
-            else_body = ''.join(self.nodeToJs(n) for n in node.else_body)
+            cond = self.nodeToJs(node.cond, flags)
+            body = ''.join(self.nodeToJs(n, flags) for n in node.body)
+            else_body = ''.join(self.nodeToJs(n, flags) for n in node.else_body)
             return f'if({cond}){{{body}}}else{{{else_body}}};'
         
         if node.type == Nodes.WHILE:
             cond = node.cond
-            body = ''.join(self.nodeToJs(n) for n in node.body)
-            return f'while({self.nodeToJs(cond)}){{{body}}};'
+            body = ''.join(self.nodeToJs(n, flags) for n in node.body)
+            return f'while({self.nodeToJs(cond, flags)}){{{body}}};'
         
         if node.type == Nodes.STATEMENT_CALL:
-            func = self.nodeToJs(node.func)
-            args = ','.join(self.nodeToJs(arg) for arg in node.args)
+            func = self.nodeToJs(node.func, flags)
+            args = ','.join(self.nodeToJs(arg, flags) for arg in node.args)
             return f'{func}({args});'
         
         if node.type == Nodes.STATEMENT_BINARY:
-            left = self.nodeToJs(node.left)
+            left = self.nodeToJs(node.left, flags)
             op = operators[node.operation]
-            right = self.nodeToJs(node.right)
+            right = self.nodeToJs(node.right, flags)
             return f'{left}{op}{right};'
         
         if node.type == Nodes.CLASS:
             name = node.name
-            body = ''.join(self.nodeToJs(n, flag=Flags.CLASS) for n in node.body)
+            self.classes.append(name)
+            body = ''.join(self.nodeToJs(n, Flags.CLASS) for n in node.body)
             return f'class {name}{{{body}}};'
         
         if node.type == Nodes.BINARY and node.statement:
-            left = self.nodeToJs(node.left)
+            left = self.nodeToJs(node.left, flags)
             op = operators[node.operation]
-            right = self.nodeToJs(node.right)
+            right = self.nodeToJs(node.right, flags)
             return f'{left}{op}{right};'
         
         if node.type == Nodes.FOR:
             var = node.var
-            iter = self.nodeToJs(node.iter)
-            body = ''.join(self.nodeToJs(n) for n in node.body)
+            iter = self.nodeToJs(node.iter, flags)
+            body = ''.join(self.nodeToJs(n, flags) for n in node.body)
             return f'for(var {var} of {iter}){{{body}}};'
 
 
         # === Expressions ===
         if node.type == Nodes.BINARY:
-            left = self.nodeToJs(node.left)
+            left = self.nodeToJs(node.left, flags)
             op = operators[node.operation]
-            right = self.nodeToJs(node.right)
+            right = self.nodeToJs(node.right, flags)
             return f'{left}{op}{right}' + (';' if node.statement else '')
         
         if node.type == Nodes.CALL:
-            func = self.nodeToJs(node.func)
-            args = ','.join(self.nodeToJs(arg) for arg in node.args)
-            return f'{func}({args})' + (';' if node.statement else '')
+            func = self.nodeToJs(node.func, flags)
+            new = 'new ' if func in self.classes else ''
+            args = ','.join(self.nodeToJs(arg, flags) for arg in node.args)
+            return f'{new}{func}({args})' + (';' if node.statement else '')
         
         if node.type == Nodes.ACCESS:
-            obj = self.nodeToJs(node.obj)
+            obj = self.nodeToJs(node.obj, flags)
+            if obj == 'self' and flags == Flags.CLASS:
+                obj = 'this'
             attr = node.attr
             return f'{obj}.{attr}' + (';' if node.statement else '')
         
         if node.type == Nodes.INDEX:
-            obj = self.nodeToJs(node.obj)
-            index = self.nodeToJs(node.index)
+            obj = self.nodeToJs(node.obj, flags)
+            index = self.nodeToJs(node.index, flags)
             return f'{obj}[{index}]' + (';' if node.statement else '')
 
 
@@ -150,7 +157,7 @@ class Transpiler:
             return f'{id}'
         
         if node.type == Nodes.LIST:
-            els = ','.join(self.nodeToJs(el) for el in node.arr)
+            els = ','.join(self.nodeToJs(el, flags) for el in node.arr)
             return f'[{els}]'
         
 
