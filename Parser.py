@@ -201,6 +201,10 @@ class Parser:
         if self.peek().type == TokenTypes.KEYWORD and self.peek().subtype == TokenSubtypes.KEYWORD_FOR:
             return self.ParseFor()
         
+        # Import
+        if self.peek().type == TokenTypes.KEYWORD and self.peek().subtype == TokenSubtypes.KEYWORD_IMPORT:
+            return self.ParseImport()
+        
         # New Line
         if self.peek().type == TokenTypes.EOL:
             self.SkipEOL()
@@ -443,6 +447,8 @@ class Parser:
 
         self.consume() # new line
 
+        node.statement = True
+
         return NodeStatementCall(node.func, node.args)
     
     def ParseComment(self) -> Node:
@@ -459,6 +465,8 @@ class Parser:
         node = self.ParseExpression()
 
         self.consume() # new line
+
+        node.statement = True
 
         return NodeStatementBinary(node.left, node.operation, node.right)
     
@@ -520,6 +528,16 @@ class Parser:
         self.indents -= 1
 
         return NodeFor(var, iter, body)
+    
+    def ParseImport(self) -> Node:
+
+        self.consume() # import
+
+        self.consume().value # temp do nothing
+
+        self.consume() # new line
+
+        return None
 
     # ========== HELPER ========== #
 

@@ -23,6 +23,7 @@ class TokenSubtypes:
     KEYWORD_CLASS = 'CLASS'
     KEYWORD_FOR = 'FOR'
     KEYWORD_IN = 'IN'
+    KEYWORD_IMPORT = 'IMPORT'
 
     LITERAL_STRING = 'STRING'
     LITERAL_INTEGER = 'INTEGER'
@@ -147,7 +148,8 @@ class Lexer:
             'while': TokenSubtypes.KEYWORD_WHILE,
             'class': TokenSubtypes.KEYWORD_CLASS,
             'for': TokenSubtypes.KEYWORD_FOR,
-            'in': TokenSubtypes.KEYWORD_IN
+            'in': TokenSubtypes.KEYWORD_IN,
+            'import': TokenSubtypes.KEYWORD_IMPORT
         }
 
         operators = {
