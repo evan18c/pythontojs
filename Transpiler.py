@@ -47,10 +47,15 @@ class Transpiler:
         if node is None:
             return ''
         
+
+
+
         # === Statements ===
         if node.type == Nodes.ASSIGNMENT:
             type = 'static' if flag == Flags.CLASS else 'var'
-            return f'{type} {node.var}={self.nodeToJs(node.expr)};'
+            var = node.var
+            expr = self.nodeToJs(expr)
+            return f'{type} {var}={expr};'
         
         if node.type == Nodes.DEFINITION:
             func = node.func
@@ -65,13 +70,14 @@ class Transpiler:
                 return f'var {func}=function({args}){{{body}}};'
         
         if node.type == Nodes.RETURN:
-            return f'return {self.nodeToJs(node.expr)};'
+            expr = self.nodeToJs(node.expr)
+            return f'return {expr};'
         
         if node.type == Nodes.IF:
-            cond = node.cond
+            cond = self.nodeToJs(node.cond)
             body = ''.join(self.nodeToJs(n) for n in node.body)
             else_body = ''.join(self.nodeToJs(n) for n in node.else_body)
-            return f'if({self.nodeToJs(cond)}){{{body}}}else{{{else_body}}};'
+            return f'if({cond}){{{body}}}else{{{else_body}}};'
         
         if node.type == Nodes.WHILE:
             cond = node.cond
@@ -84,7 +90,10 @@ class Transpiler:
             return f'{func}({args});'
         
         if node.type == Nodes.STATEMENT_BINARY:
-            return f'{self.nodeToJs(node.left)}{operators[node.operation]}{self.nodeToJs(node.right)};'
+            left = self.nodeToJs(node.left)
+            op = operators[node.operation]
+            right = self.nodeToJs(node.right)
+            return f'{left}{op}{right};'
         
         if node.type == Nodes.CLASS:
             name = node.name
@@ -92,7 +101,10 @@ class Transpiler:
             return f'class {name}{{{body}}};'
         
         if node.type == Nodes.BINARY and node.statement:
-            return f'{self.nodeToJs(node.left)}{operators[node.operation]}{self.nodeToJs(node.right)};'
+            left = self.nodeToJs(node.left)
+            op = operators[node.operation]
+            right = self.nodeToJs(node.right)
+            return f'{left}{op}{right};'
         
         if node.type == Nodes.FOR:
             var = node.var
@@ -100,9 +112,15 @@ class Transpiler:
             body = ''.join(self.nodeToJs(n) for n in node.body)
             return f'for(var {var} in {iter}){{{body}}};'
 
+
+
+
         # === Expressions ===
         if node.type == Nodes.BINARY and not node.statement:
-            return f'({self.nodeToJs(node.left)}{operators[node.operation]}{self.nodeToJs(node.right)})'
+            left = self.nodeToJs(node.left)
+            op = operators[node.operation]
+            right = self.nodeToJs(node.right)
+            return f'{left}{op}{right}'
         
         if node.type == Nodes.CALL:
             func = self.nodeToJs(node.func)
@@ -110,20 +128,32 @@ class Transpiler:
             return f'{func}({args})'
         
         if node.type == Nodes.ACCESS:
-            return f'{self.nodeToJs(node.obj)}.{node.attr}'
+            obj = self.nodeToJs(node.obj)
+            attr = node.attr
+            return f'{obj}.{attr}'
         
         if node.type == Nodes.INDEX:
-            return f'{self.nodeToJs(node.obj)}[{self.nodeToJs(node.index)}]'
+            obj = self.nodeToJs(node.obj)
+            index = self.nodeToJs(node.index)
+            return f'{obj}[{index}]'
+
+
+
 
         # === Objects ===
         if node.type == Nodes.LITERAL:
-            return f'{node.value}'
+            value = node.value
+            return f'{value}'
 
         if node.type == Nodes.IDENTIFIER:
-            return f'{node.id}'
+            id = node.id
+            return f'{id}'
         
         if node.type == Nodes.LIST:
             els = ','.join(self.nodeToJs(el) for el in node.arr)
             return f'[{els}]'
         
-        return f'---> {node.type} <---'
+
+
+
+        return f'Untranspiled: {node.type}!'
