@@ -20,7 +20,7 @@ class Transpiler:
 
     # Adds Python functions to JavaScript
     def builtin(self) -> None:
-        self.code += 'var range=function(n){return Array.from({length:n},(_,i)=>i);};' # range
+        self.code += 'function range(n){return Array.from({length:n},(_,i)=>i);};' # range
 
     # Converts AST to JavaScript
     def transpile(self) -> None:
@@ -79,11 +79,11 @@ class Transpiler:
             elif Flags.CLASS in flags:
                 args = ','.join(node.args[1:])
                 body = ''.join(self.nodeToJs(n, flags.copy() + [Flags.METHOD]) for n in node.body)
-                return f'{func}({args}){{{body}}};'
+                return f'function {func}({args}){{{body}}};'
             else:
                 args = ','.join(node.args)
                 body = ''.join(self.nodeToJs(n, flags.copy() + [Flags.METHOD]) for n in node.body)
-                return f'{func}({args}){{{body}}};'
+                return f'function {func}({args}){{{body}}};'
         
         if node.type == Nodes.RETURN:
             expr = self.nodeToJs(node.expr, flags.copy())
