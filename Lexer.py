@@ -21,6 +21,8 @@ class TokenSubtypes:
     KEYWORD_ELSE = 'ELSE'
     KEYWORD_WHILE = 'WHILE'
     KEYWORD_CLASS = 'CLASS'
+    KEYWORD_FOR = 'FOR'
+    KEYWORD_IN = 'IN'
 
     LITERAL_STRING = 'STRING'
     LITERAL_INTEGER = 'INTEGER'
@@ -95,7 +97,7 @@ class Lexer:
 
         # Iterate
         i = 0
-        line = 0
+        line = 1
         cons_space = 0
         while i < len(self.text):
 
@@ -143,7 +145,9 @@ class Lexer:
             'elif': TokenSubtypes.KEYWORD_ELIF,
             'else': TokenSubtypes.KEYWORD_ELSE,
             'while': TokenSubtypes.KEYWORD_WHILE,
-            'class': TokenSubtypes.KEYWORD_CLASS
+            'class': TokenSubtypes.KEYWORD_CLASS,
+            'for': TokenSubtypes.KEYWORD_FOR,
+            'in': TokenSubtypes.KEYWORD_IN
         }
 
         operators = {
