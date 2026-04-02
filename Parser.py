@@ -16,6 +16,7 @@ class Nodes:
     STATEMENT_BINARY = 'STATEMENT_BINARY'
     CLASS = 'CLASS'
     FOR = 'FOR'
+    CONTINUE = 'CONTINUE'
 
     # Expressions
     BINARY = 'BINARY'
@@ -98,6 +99,10 @@ class NodeClass(Node):
         super().__init__(Nodes.CLASS, True)
         self.name = name
         self.body = body
+
+class NodeContinue(Node):
+    def __init__(self):
+        super().__init__(Nodes.CONTINUE, True)
 
 class NodeBinary(Node):
     def __init__(self, left: Node, operation: TokenSubtypes, right: Node):
@@ -227,6 +232,10 @@ class Parser:
         # From
         if self.peek().type == TokenTypes.KEYWORD and self.peek().subtype == TokenSubtypes.KEYWORD_FROM:
             return self.ParseFrom()
+        
+        # Continue
+        if self.peek().type == TokenTypes.KEYWORD and self.peek().subtype == TokenSubtypes.KEYWORD_CONTINUE:
+            return self.ParseContinue()
         
         # New Line
         if self.peek().type == TokenTypes.EOL:
@@ -611,6 +620,11 @@ class Parser:
             self.consume()
         self.consume()
         return None
+    
+    def ParseContinue(self) -> Node:
+        self.consume() # continue
+        self.consume() # new line
+        return NodeContinue()
 
     # ========== HELPER ========== #
 

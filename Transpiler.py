@@ -128,6 +128,9 @@ class Transpiler:
             iter = self.nodeToJs(node.iter, flags.copy())
             body = ''.join(self.nodeToJs(n, flags.copy()) for n in node.body)
             return f'for(var {var} of {iter}){{{body}}};'
+        
+        if node.type == Nodes.CONTINUE:
+            return f'continue;'
 
 
         # === Expressions ===

@@ -26,6 +26,7 @@ class TokenSubtypes:
     KEYWORD_IMPORT = 'IMPORT'
     KEYWORD_FROM = 'FROM'
     KEYWORD_ARROW = 'ARROW'
+    KEYWORD_CONTINUE = 'CONTINUE'
 
     LITERAL_STRING = 'STRING'
     LITERAL_INTEGER = 'INTEGER'
@@ -161,7 +162,8 @@ class Lexer:
             'in': TokenSubtypes.KEYWORD_IN,
             'import': TokenSubtypes.KEYWORD_IMPORT,
             'from': TokenSubtypes.KEYWORD_FROM,
-            '->': TokenSubtypes.KEYWORD_ARROW
+            '->': TokenSubtypes.KEYWORD_ARROW,
+            'continue': TokenSubtypes.KEYWORD_CONTINUE
         }
 
         operators = {
