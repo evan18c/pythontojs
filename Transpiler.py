@@ -8,6 +8,8 @@ from Parser import Nodes, Node
 # Flags that can be passed to nodeToJs
 class Flags:
     CLASS = 1
+    CONSTRUCTOR = 2
+    METHOD = 3
 
 class Transpiler:
     def __init__(self, ast: list[Node]):
@@ -24,11 +26,11 @@ class Transpiler:
     def transpile(self) -> None:
         self.builtin()
         for node in self.ast:
-            self.code += self.nodeToJs(node, None)
+            self.code += self.nodeToJs(node, [])
     
     # Converts node to JavaScript
     # Optional flags parameter to pass to objects that may need it
-    def nodeToJs(self, node: Node, flags):
+    def nodeToJs(self, node: Node, flags: list):
 
         # === Helpers === 
         operators = {
@@ -50,7 +52,9 @@ class Transpiler:
             TokenSubtypes.OPERATOR_NOTEQUAL: '!=',
             TokenSubtypes.OPERATOR_EQUALEQUAL: '==',
             TokenSubtypes.OPERATOR_IN: ' in ',
-            TokenSubtypes.OPERATOR_NOT: '!'
+            TokenSubtypes.OPERATOR_NOT: '!',
+            TokenSubtypes.OPERATOR_AND: '&&',
+            TokenSubtypes.OPERATOR_OR: '||'
         }
 
         # === None ===
@@ -60,96 +64,101 @@ class Transpiler:
 
         # === Statements ===
         if node.type == Nodes.ASSIGNMENT:
-            type = 'static' if flags == Flags.CLASS else 'var'
+            type = 'static' if (Flags.CLASS in flags and Flags.METHOD not in flags) else 'var'
             var = node.var
-            expr = self.nodeToJs(node.expr, flags)
+            expr = self.nodeToJs(node.expr, flags.copy())
             return f'{type} {var}={expr};'
         
         if node.type == Nodes.DEFINITION:
             func = node.func
             self.functions.append(func)
-            args = ','.join(node.args)
-            body = ''.join(self.nodeToJs(n, flags) for n in node.body)
-            if flags == Flags.CLASS:
-                if func == '__init__':
-                    func = 'constructor'
+            if Flags.CLASS in flags and func == '__init__':
+                func = 'constructor'
                 args = ','.join(node.args[1:])
+                body = ''.join(self.nodeToJs(n, flags.copy()) for n in node.body)    # edit here
+                return f'{func}({args}){{{body}}};'
+            elif Flags.CLASS in flags:
+                args = ','.join(node.args[1:])
+                body = ''.join(self.nodeToJs(n, flags.copy() + [Flags.METHOD]) for n in node.body)
                 return f'{func}({args}){{{body}}};'
             else:
-                return f'var {func}=function({args}){{{body}}};'
+                print('not constructor:', func)
+                args = ','.join(node.args)
+                body = ''.join(self.nodeToJs(n, flags.copy() + [Flags.METHOD]) for n in node.body)
+                return f'{func}({args}){{{body}}};'
         
         if node.type == Nodes.RETURN:
-            expr = self.nodeToJs(node.expr, flags)
+            expr = self.nodeToJs(node.expr, flags.copy())
             return f'return {expr};'
         
         if node.type == Nodes.IF:
-            cond = self.nodeToJs(node.cond, flags)
-            body = ''.join(self.nodeToJs(n, flags) for n in node.body)
-            else_body = ''.join(self.nodeToJs(n, flags) for n in node.else_body)
+            cond = self.nodeToJs(node.cond, flags.copy())
+            body = ''.join(self.nodeToJs(n, flags.copy()) for n in node.body)
+            else_body = ''.join(self.nodeToJs(n, flags.copy()) for n in node.else_body)
             return f'if({cond}){{{body}}}else{{{else_body}}};'
         
         if node.type == Nodes.WHILE:
             cond = node.cond
-            body = ''.join(self.nodeToJs(n, flags) for n in node.body)
-            return f'while({self.nodeToJs(cond, flags)}){{{body}}};'
+            body = ''.join(self.nodeToJs(n, flags.copy()) for n in node.body)
+            return f'while({self.nodeToJs(cond, flags.copy())}){{{body}}};'
         
         if node.type == Nodes.STATEMENT_CALL:
-            func = self.nodeToJs(node.func, flags)
-            args = ','.join(self.nodeToJs(arg, flags) for arg in node.args)
+            func = self.nodeToJs(node.func, flags.copy())
+            args = ','.join(self.nodeToJs(arg, flags.copy()) for arg in node.args)
             return f'{func}({args});'
         
         if node.type == Nodes.STATEMENT_BINARY:
-            left = self.nodeToJs(node.left, flags)
+            left = self.nodeToJs(node.left, flags.copy())
             op = operators[node.operation]
-            right = self.nodeToJs(node.right, flags)
+            right = self.nodeToJs(node.right, flags.copy())
             return f'{left}{op}{right};'
         
         if node.type == Nodes.CLASS:
             name = node.name
             self.classes.append(name)
-            body = ''.join(self.nodeToJs(n, Flags.CLASS) for n in node.body)
+            body = ''.join(self.nodeToJs(n, flags.copy() + [Flags.CLASS]) for n in node.body)    # edit here
             return f'class {name}{{{body}}};'
         
         if node.type == Nodes.BINARY and node.statement:
-            left = self.nodeToJs(node.left, flags)
+            left = self.nodeToJs(node.left, flags.copy())
             op = operators[node.operation]
-            right = self.nodeToJs(node.right, flags)
+            right = self.nodeToJs(node.right, flags.copy())
             return f'{left}{op}{right};'
         
         if node.type == Nodes.FOR:
             var = node.var
-            iter = self.nodeToJs(node.iter, flags)
-            body = ''.join(self.nodeToJs(n, flags) for n in node.body)
+            iter = self.nodeToJs(node.iter, flags.copy())
+            body = ''.join(self.nodeToJs(n, flags.copy()) for n in node.body)
             return f'for(var {var} of {iter}){{{body}}};'
 
 
         # === Expressions ===
         if node.type == Nodes.BINARY:
-            left = self.nodeToJs(node.left, flags)
+            left = self.nodeToJs(node.left, flags.copy())
             op = operators[node.operation]
-            right = self.nodeToJs(node.right, flags)
+            right = self.nodeToJs(node.right, flags.copy())
             return f'{left}{op}{right}' + (';' if node.statement else '')
         
         if node.type == Nodes.CALL:
-            func = self.nodeToJs(node.func, flags)
+            func = self.nodeToJs(node.func, flags.copy())
             new = 'new ' if func in self.classes else ''
-            args = ','.join(self.nodeToJs(arg, flags) for arg in node.args)
+            args = ','.join(self.nodeToJs(arg, flags.copy()) for arg in node.args)
             return f'{new}{func}({args})' + (';' if node.statement else '')
         
         if node.type == Nodes.ACCESS:
-            obj = self.nodeToJs(node.obj, flags)
-            if obj == 'self' and flags == Flags.CLASS:
+            obj = self.nodeToJs(node.obj, flags.copy())
+            if obj == 'self' and Flags.CLASS in flags:
                 obj = 'this'
             attr = node.attr
             return f'{obj}.{attr}' + (';' if node.statement else '')
         
         if node.type == Nodes.INDEX:
-            obj = self.nodeToJs(node.obj, flags)
-            index = self.nodeToJs(node.index, flags)
+            obj = self.nodeToJs(node.obj, flags.copy())
+            index = self.nodeToJs(node.index, flags.copy())
             return f'{obj}[{index}]' + (';' if node.statement else '')
         
         if node.type == Nodes.UNARY:
-            operand = self.nodeToJs(node.operand, flags)
+            operand = self.nodeToJs(node.operand, flags.copy())
             op = operators[node.operation]
             return f'{op}{operand}' + (';' if node.statement else '')
 
@@ -164,11 +173,11 @@ class Transpiler:
             return f'{id}'
         
         if node.type == Nodes.LIST:
-            els = ','.join(self.nodeToJs(el, flags) for el in node.arr)
+            els = ','.join(self.nodeToJs(el, flags.copy()) for el in node.arr)
             return f'[{els}]'
         
         if node.type == Nodes.DICT:
-            els = ','.join(f'{self.nodeToJs(k, flags)}:{self.nodeToJs(node.dict_[k], flags)}' for k in node.dict_)
+            els = ','.join(f'{self.nodeToJs(k, flags.copy())}:{self.nodeToJs(node.dict_[k], flags.copy())}' for k in node.dict_)
             return f'{{{els}}}'
         
 

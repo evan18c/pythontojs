@@ -133,7 +133,7 @@ class Lexer:
             else:
                 cons_space = 0
 
-            if char == '"' or char == "'":
+            if char == "'":
                 bs = not bs
 
             if cons_space == 4:
