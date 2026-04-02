@@ -48,7 +48,9 @@ class Transpiler:
             TokenSubtypes.OPERATOR_LESSEQUAL: '<=',
             TokenSubtypes.OPERATOR_GREATEREQUAL: '>=',
             TokenSubtypes.OPERATOR_NOTEQUAL: '!=',
-            TokenSubtypes.OPERATOR_EQUALEQUAL: '=='
+            TokenSubtypes.OPERATOR_EQUALEQUAL: '==',
+            TokenSubtypes.OPERATOR_IN: ' in ',
+            TokenSubtypes.OPERATOR_NOT: '!'
         }
 
         # === None ===
@@ -145,6 +147,11 @@ class Transpiler:
             obj = self.nodeToJs(node.obj, flags)
             index = self.nodeToJs(node.index, flags)
             return f'{obj}[{index}]' + (';' if node.statement else '')
+        
+        if node.type == Nodes.UNARY:
+            operand = self.nodeToJs(node.operand, flags)
+            op = operators[node.operation]
+            return f'{op}{operand}' + (';' if node.statement else '')
 
 
         # === Objects ===

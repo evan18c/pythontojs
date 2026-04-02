@@ -25,6 +25,7 @@ class TokenSubtypes:
     KEYWORD_IN = 'IN'
     KEYWORD_IMPORT = 'IMPORT'
     KEYWORD_FROM = 'FROM'
+    KEYWORD_ARROW = 'ARROW'
 
     LITERAL_STRING = 'STRING'
     LITERAL_INTEGER = 'INTEGER'
@@ -51,6 +52,9 @@ class TokenSubtypes:
     OPERATOR_GREATEREQUAL = 'GREATEREQUAL'
     OPERATOR_NOTEQUAL = 'NOTEQUAL'
     OPERATOR_EQUALEQUAL = 'EQUALEQUAL'
+    OPERATOR_IN = 'IN'
+    
+    OPERATOR_NOT = 'NOT'
 
     DELIMITER_COMMENT = 'COMMENT'
     DELIMITER_LPAREN = 'LPAREN'
@@ -152,7 +156,8 @@ class Lexer:
             'for': TokenSubtypes.KEYWORD_FOR,
             'in': TokenSubtypes.KEYWORD_IN,
             'import': TokenSubtypes.KEYWORD_IMPORT,
-            'from': TokenSubtypes.KEYWORD_FROM
+            'from': TokenSubtypes.KEYWORD_FROM,
+            '->': TokenSubtypes.KEYWORD_ARROW
         }
 
         operators = {
@@ -174,7 +179,9 @@ class Lexer:
             '<=': TokenSubtypes.OPERATOR_LESSEQUAL, 
             '>=': TokenSubtypes.OPERATOR_GREATEREQUAL, 
             '!=': TokenSubtypes.OPERATOR_NOTEQUAL, 
-            '==': TokenSubtypes.OPERATOR_EQUALEQUAL, 
+            '==': TokenSubtypes.OPERATOR_EQUALEQUAL,
+            'in': TokenSubtypes.OPERATOR_IN,
+            'not': TokenSubtypes.OPERATOR_NOT
         }
 
         delimiters = {

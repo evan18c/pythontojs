@@ -22,6 +22,7 @@ class Nodes:
     CALL = 'CALL'
     ACCESS = 'ACCESS'
     INDEX = 'INDEX'
+    UNARY = 'UNARY'
 
     # Objects
     LITERAL = 'LITERAL'
@@ -102,6 +103,12 @@ class NodeBinary(Node):
         self.left = left
         self.operation = operation
         self.right = right
+
+class NodeUnary(Node):
+    def __init__(self, operand: Node, operation: TokenSubtypes):
+        super().__init__(Nodes.UNARY, False)
+        self.operand = operand
+        self.operation = operation
 
 class NodeCall(Node):
     def __init__(self, func: Node, args: list[Node]):
@@ -215,10 +222,10 @@ class Parser:
             return None
 
         # Unknown Statement
-        raise SyntaxError(f'Unexpected {self.peek().type}, {self.peek().subtype}.')
+        raise SyntaxError(f'Unexpected [{self.peek().type}.{self.peek().subtype}] at Line {self.peek().line}')
         
     def ParseExpression(self) -> Node:
-        return self.ParseExpressionLevelTwo()
+        return self.ParseExpressionLevelThree()
 
     
     # ========== EXPRESSIONS ========== #
@@ -283,11 +290,21 @@ class Parser:
         # Return
         return node
 
-        
-    # * / % parsed here
     def ParseExpressionLevelOne(self) -> Node:
 
-        node = self.ParseExpressionLevelZero()
+        if self.peek().subtype in [
+            TokenSubtypes.OPERATOR_NOT
+        ]:
+            op = self.consume().subtype
+            operand = self.ParseExpressionLevelOne()
+            return NodeUnary(operand, op)
+
+        return self.ParseExpressionLevelZero()
+        
+    # * / % parsed here
+    def ParseExpressionLevelTwo(self) -> Node:
+
+        node = self.ParseExpressionLevelOne()
 
         while self.peek().subtype in [
             TokenSubtypes.OPERATOR_MULTIPLY,
@@ -299,15 +316,15 @@ class Parser:
         ]:
             left = node
             op = self.consume().subtype
-            right = self.ParseExpressionLevelZero()
+            right = self.ParseExpressionLevelOne()
             node = NodeBinary(left, op, right)
 
         return node
     
     # + - parsed here
-    def ParseExpressionLevelTwo(self) -> Node:
+    def ParseExpressionLevelThree(self) -> Node:
 
-        node = self.ParseExpressionLevelOne()
+        node = self.ParseExpressionLevelTwo()
 
         while self.peek().subtype in [
             TokenSubtypes.OPERATOR_EQUAL,
@@ -320,11 +337,12 @@ class Parser:
             TokenSubtypes.OPERATOR_LESSEQUAL,
             TokenSubtypes.OPERATOR_GREATEREQUAL,
             TokenSubtypes.OPERATOR_NOTEQUAL,
-            TokenSubtypes.OPERATOR_EQUALEQUAL
+            TokenSubtypes.OPERATOR_EQUALEQUAL,
+            TokenSubtypes.OPERATOR_IN,
         ]:
             left = node
             op = self.consume().subtype
-            right = self.ParseExpressionLevelOne()
+            right = self.ParseExpressionLevelTwo()
             node = NodeBinary(left, op, right)
 
         return node
@@ -357,12 +375,19 @@ class Parser:
             if len(args) != 0:
                 self.consume() # ,
             args.append(self.consume().value)
+            if self.peek().subtype == TokenSubtypes.DELIMITER_COLON:
+                self.consume() # :
+                self.consume() # type
         
         self.consume() # )
+
+        if self.peek().subtype == TokenSubtypes.KEYWORD_ARROW:
+            self.consume() # ->
+            self.consume() # type
         
         self.consume() # :
 
-        self.consume() # new line
+        self.SkipEOL() # new lines
 
         self.indents += 1
         body = []
@@ -393,7 +418,7 @@ class Parser:
 
         self.consume() # :
 
-        self.consume() # new line
+        self.SkipEOL() # new lines
 
         # Parse Body
         self.indents += 1
@@ -431,7 +456,7 @@ class Parser:
 
         self.consume() # :
 
-        self.consume() # new line
+        self.SkipEOL() # new lines
 
         # Parse Body
         self.indents += 1
@@ -482,7 +507,7 @@ class Parser:
 
         self.consume() # :
 
-        self.consume() # new line
+        self.SkipEOL() # new lines
 
         # Parse Body
         self.indents += 1
@@ -519,7 +544,7 @@ class Parser:
 
         self.consume() # :
 
-        self.consume() # new line
+        self.SkipEOL() # new lines
 
         # Parse Body
         self.indents += 1
