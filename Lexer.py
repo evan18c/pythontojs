@@ -39,6 +39,8 @@ class TokenSubtypes:
     OPERATOR_MULTIPLY = 'MULTIPLY'
     OPERATOR_DIVIDE = 'DIVIDE'
     OPERATOR_MODULO = 'MODULO'
+    OPERATOR_AND = 'AND'
+    OPERATOR_OR = 'OR'
 
     OPERATOR_ADDEQUAL = 'ADDEQUAL'
     OPERATOR_SUBTRACTEQUAL = 'SUBTRACTEQUAL'
@@ -53,7 +55,7 @@ class TokenSubtypes:
     OPERATOR_NOTEQUAL = 'NOTEQUAL'
     OPERATOR_EQUALEQUAL = 'EQUALEQUAL'
     OPERATOR_IN = 'IN'
-    
+
     OPERATOR_NOT = 'NOT'
 
     DELIMITER_COMMENT = 'COMMENT'
@@ -61,6 +63,8 @@ class TokenSubtypes:
     DELIMITER_RPAREN = 'RPAREN'
     DELIMITER_LSQUARE = 'LSQUARE'
     DELIMITER_RSQUARE = 'RSQUARE'
+    DELIMITER_LBRACE = 'LBRACE'
+    DELIMITER_RBRACE = 'RBRACE'
     DELIMITER_COLON = 'COLON'
     DELIMITER_COMMA = 'COMMA'
     DELIMITER_DOT = 'DOT'
@@ -95,7 +99,7 @@ class Lexer:
     def scan(self) -> None:
 
         # Dictionary
-        dictionary_breaks = ' ()[]:,.\n'
+        dictionary_breaks = ' ()[]{}:,.\n'
 
         # Current working string
         current = ''
@@ -181,7 +185,9 @@ class Lexer:
             '!=': TokenSubtypes.OPERATOR_NOTEQUAL, 
             '==': TokenSubtypes.OPERATOR_EQUALEQUAL,
             'in': TokenSubtypes.OPERATOR_IN,
-            'not': TokenSubtypes.OPERATOR_NOT
+            'not': TokenSubtypes.OPERATOR_NOT,
+            'and': TokenSubtypes.OPERATOR_AND,
+            'or': TokenSubtypes.OPERATOR_OR
         }
 
         delimiters = {
@@ -190,6 +196,8 @@ class Lexer:
             ')': TokenSubtypes.DELIMITER_RPAREN,
             '[': TokenSubtypes.DELIMITER_LSQUARE,
             ']': TokenSubtypes.DELIMITER_RSQUARE,
+            '{': TokenSubtypes.DELIMITER_LBRACE,
+            '}': TokenSubtypes.DELIMITER_RBRACE,
             ':': TokenSubtypes.DELIMITER_COLON,
             ',': TokenSubtypes.DELIMITER_COMMA,
             '.': TokenSubtypes.DELIMITER_DOT

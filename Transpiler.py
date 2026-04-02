@@ -167,6 +167,10 @@ class Transpiler:
             els = ','.join(self.nodeToJs(el, flags) for el in node.arr)
             return f'[{els}]'
         
+        if node.type == Nodes.DICT:
+            els = ','.join(f'{self.nodeToJs(k, flags)}:{self.nodeToJs(node.dict_[k], flags)}' for k in node.dict_)
+            return f'{{{els}}}'
+        
 
         # === Unknown ===
         return f'Untranspiled: {node.type}!'

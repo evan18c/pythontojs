@@ -30,6 +30,7 @@ class Nodes:
 
     # Python Objects
     LIST = 'LIST'
+    DICT = 'DICT'
 
 class Node:
     def __init__(self, type: str, statement: bool):
@@ -143,6 +144,11 @@ class NodeList(Node):
         super().__init__(Nodes.LIST, False)
         self.arr = arr
 
+class NodeDict(Node):
+    def __init__(self, dict_: dict):
+        super().__init__(Nodes.DICT, False)
+        self.dict_ = dict_
+
 class Parser:
     def __init__(self, tokens: list):
         self.tokens = tokens
@@ -250,6 +256,19 @@ class Parser:
                 arr.append(self.ParseExpression())
             self.consume() # ]
             node = NodeList(arr)
+
+        # Dictionary
+        if token.subtype == TokenSubtypes.DELIMITER_LBRACE:
+            dict_ = {}
+            while self.peek().subtype != TokenSubtypes.DELIMITER_RBRACE:
+                if len(dict_) != 0:
+                    self.consume() # ,
+                key = self.ParseExpression()
+                self.consume() # :
+                val = self.ParseExpression()
+                dict_[key] = val
+            self.consume() # }
+            node = NodeDict(dict_)
         
         # Identifier
         if token.type == TokenTypes.IDENTIFIER:
@@ -339,6 +358,8 @@ class Parser:
             TokenSubtypes.OPERATOR_NOTEQUAL,
             TokenSubtypes.OPERATOR_EQUALEQUAL,
             TokenSubtypes.OPERATOR_IN,
+            TokenSubtypes.OPERATOR_AND,
+            TokenSubtypes.OPERATOR_OR
         ]:
             left = node
             op = self.consume().subtype
