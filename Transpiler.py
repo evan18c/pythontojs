@@ -40,6 +40,7 @@ class Transpiler:
             TokenSubtypes.OPERATOR_MULTIPLY: '*',
             TokenSubtypes.OPERATOR_DIVIDE: '/',
             TokenSubtypes.OPERATOR_MODULO: '%',
+            TokenSubtypes.OPERATOR_EXPONENT: '**',
             TokenSubtypes.OPERATOR_ADDEQUAL: '+=',
             TokenSubtypes.OPERATOR_SUBTRACTEQUAL: '-=',
             TokenSubtypes.OPERATOR_MULTIPLYEQUAL: '*=',

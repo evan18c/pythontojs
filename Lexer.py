@@ -40,6 +40,7 @@ class TokenSubtypes:
     OPERATOR_MULTIPLY = 'MULTIPLY'
     OPERATOR_DIVIDE = 'DIVIDE'
     OPERATOR_MODULO = 'MODULO'
+    OPERATOR_EXPONENT = 'EXPONENT'
     OPERATOR_AND = 'AND'
     OPERATOR_OR = 'OR'
 
@@ -173,6 +174,7 @@ class Lexer:
             '*': TokenSubtypes.OPERATOR_MULTIPLY, 
             '/': TokenSubtypes.OPERATOR_DIVIDE, 
             '%': TokenSubtypes.OPERATOR_MODULO, 
+            '**': TokenSubtypes.OPERATOR_EXPONENT,
 
             '+=': TokenSubtypes.OPERATOR_ADDEQUAL, 
             '-=': TokenSubtypes.OPERATOR_SUBTRACTEQUAL, 

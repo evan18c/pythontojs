@@ -356,6 +356,7 @@ class Parser:
         node = self.ParseExpressionLevelOne()
 
         while self.peek().subtype in [
+            TokenSubtypes.OPERATOR_EXPONENT,
             TokenSubtypes.OPERATOR_MULTIPLY,
             TokenSubtypes.OPERATOR_DIVIDE,
             TokenSubtypes.OPERATOR_MODULO,
