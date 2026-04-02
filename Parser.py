@@ -31,6 +31,7 @@ class Nodes:
     # Python Objects
     LIST = 'LIST'
     DICT = 'DICT'
+    TUPLE = 'TUPLE'
 
 class Node:
     def __init__(self, type: str, statement: bool):
@@ -148,6 +149,11 @@ class NodeDict(Node):
     def __init__(self, dict_: dict):
         super().__init__(Nodes.DICT, False)
         self.dict_ = dict_
+
+class NodeTuple(Node):
+    def __init__(self, arr: list):
+        super().__init__(Nodes.TUPLE, False)
+        self.arr = arr
 
 class Parser:
     def __init__(self, tokens: list):
@@ -274,9 +280,24 @@ class Parser:
         if token.type == TokenTypes.IDENTIFIER:
             node = NodeIdentifier(token.value)
         
-        # Parentheses
+        # Parentheses (Expressions + Tuples)
         if token.subtype == TokenSubtypes.DELIMITER_LPAREN:
+
+            # ()
+            if self.peek().subtype == TokenSubtypes.DELIMITER_RPAREN:
+                self.consume() # )
+                return NodeTuple([])
+            
             node = self.ParseExpression()
+
+            # tuple check
+            if self.peek().subtype == TokenSubtypes.DELIMITER_COMMA:
+                els = [node]
+                while self.peek().subtype != TokenSubtypes.DELIMITER_RPAREN:
+                    self.consume() # ,
+                    els.append(self.ParseExpression())
+                node = NodeTuple(els)
+
             self.consume() # )
         
         # Call + Access

@@ -174,6 +174,10 @@ class Transpiler:
             els = ','.join(self.nodeToJs(el, flags.copy()) for el in node.arr)
             return f'[{els}]'
         
+        if node.type == Nodes.TUPLE:
+            els = ','.join(self.nodeToJs(el, flags.copy()) for el in node.arr)
+            return f'[{els}]'
+        
         if node.type == Nodes.DICT:
             els = ','.join(f'{self.nodeToJs(k, flags.copy())}:{self.nodeToJs(node.dict_[k], flags.copy())}' for k in node.dict_)
             return f'{{{els}}}'
