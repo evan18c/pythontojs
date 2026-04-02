@@ -114,7 +114,7 @@ class Transpiler:
             var = node.var
             iter = self.nodeToJs(node.iter)
             body = ''.join(self.nodeToJs(n) for n in node.body)
-            return f'for(var {var} in {iter}){{{body}}};'
+            return f'for(var {var} of {iter}){{{body}}};'
 
 
         # === Expressions ===
