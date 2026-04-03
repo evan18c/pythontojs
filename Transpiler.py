@@ -18,9 +18,25 @@ class Transpiler:
         self.functions = []
         self.classes = []
 
-    # Adds Python functions to JavaScript
+    # Builds in standard Python functions
     def builtin(self) -> None:
-        self.code += 'function range(n){return Array.from({length:n},(_,i)=>i);};' # range
+
+        # Constants
+        self.code += 'window.True=true;'
+        self.code += 'window.False=false;'
+        self.code += 'window.None=null;'
+
+        # Functions (TODO: only add functions required)
+        self.code += 'function abs(x){return Math.abs(x);};'
+        self.code += 'function all(x){for(var i of x){if(!i){return False;}};return True;};'
+        self.code += 'function any(x){for(var i of x){if(i){return True;}};return False;};'
+        self.code += 'function int(x){return Math.floor(x);};'
+        self.code += 'function len(x){return x.length;};'
+        self.code += 'function max(x){var m=x[0];var i=0;while((i<x.length)){if((x[i]>m)){var m=x[i];};i+=1;};return m;};'
+        self.code += 'function min(x){var m=x[0];var i=0;while((i<x.length)){if((x[i]<m)){var m=x[i];};i+=1;};return m;};'
+        self.code += 'function print(x){console.log(x);};'
+        self.code += 'function range(n){var a=[];var i=0;while((i<n)){a.push(i);i+=1;};return a;};'
+        self.code += 'function str(n){return String(n);};'
 
     # Converts AST to JavaScript
     def transpile(self) -> None:
@@ -80,7 +96,7 @@ class Transpiler:
             elif Flags.CLASS in flags:
                 args = ','.join(node.args[1:])
                 body = ''.join(self.nodeToJs(n, flags.copy() + [Flags.METHOD]) for n in node.body)
-                return f'function {func}({args}){{{body}}};'
+                return f'{func}({args}){{{body}}};'
             else:
                 args = ','.join(node.args)
                 body = ''.join(self.nodeToJs(n, flags.copy() + [Flags.METHOD]) for n in node.body)
@@ -115,7 +131,7 @@ class Transpiler:
         if node.type == Nodes.CLASS:
             name = node.name
             self.classes.append(name)
-            body = ''.join(self.nodeToJs(n, flags.copy() + [Flags.CLASS]) for n in node.body)    # edit here
+            body = ''.join(self.nodeToJs(n, flags.copy() + [Flags.CLASS]) for n in node.body)
             return f'class {name}{{{body}}};'
         
         if node.type == Nodes.BINARY and node.statement:
@@ -139,7 +155,7 @@ class Transpiler:
             left = self.nodeToJs(node.left, flags.copy())
             op = operators[node.operation]
             right = self.nodeToJs(node.right, flags.copy())
-            return f'{left}{op}{right}' + (';' if node.statement else '')
+            return f'({left}{op}{right})' + (';' if node.statement else '')
         
         if node.type == Nodes.CALL:
             func = self.nodeToJs(node.func, flags.copy())
@@ -152,6 +168,8 @@ class Transpiler:
             if obj == 'self' and Flags.CLASS in flags:
                 obj = 'this'
             attr = node.attr
+            if attr == 'append': # add dict for this
+                attr = 'push'
             return f'{obj}.{attr}' + (';' if node.statement else '')
         
         if node.type == Nodes.INDEX:
@@ -187,5 +205,5 @@ class Transpiler:
             return f'{{{els}}}'
         
 
-        # === Unknown ===
-        return f'Untranspiled: {node.type}!'
+        # === Unknown === #
+        raise SyntaxError(f'Unknown Node: {node.type}')
