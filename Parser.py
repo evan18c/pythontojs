@@ -291,7 +291,6 @@ class Parser:
                 val = self.ParseExpression()
                 self.SkipEOLTAB()
                 dict_[key] = val
-                print(dict_)
             self.consume() # }
             node = NodeDict(dict_)
         
