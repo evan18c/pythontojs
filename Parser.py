@@ -171,8 +171,7 @@ class Parser:
         if (self.pos + n) < len(self.tokens):
             return self.tokens[self.pos + n]
         else:
-            input('No more tokens!')
-            # return self.tokens[-1]
+            return self.tokens[-1]
     
     def consume(self) -> Token:
         token = self.peek()

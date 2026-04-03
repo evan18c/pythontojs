@@ -209,7 +209,7 @@ class Lexer:
 
         # string integer float bool
         def is_string(val):
-            if val[0] == val[-1] == "'":
+            if val[0] == val[-1] == '"':
                 return True
             else:
                 return False
