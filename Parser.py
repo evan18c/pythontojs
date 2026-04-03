@@ -168,10 +168,13 @@ class Parser:
         self.indents = 0
 
     def peek(self, n: int = 0) -> Token:
-        return self.tokens[self.pos + n]
+        if (self.pos + n) < len(self.tokens):
+            return self.tokens[self.pos + n]
+        else:
+            return self.tokens[-1]
     
     def consume(self) -> Token:
-        token = self.tokens[self.pos]
+        token = self.peek()
         self.pos += 1
         return token
     
