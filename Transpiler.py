@@ -91,7 +91,7 @@ class Transpiler:
             self.functions.append(func)
             if Flags.CLASS in flags and func == '__init__':
                 args = ','.join(node.args[1:])
-                body = ''.join(self.nodeToJs(n, flags.copy()) for n in node.body)    # edit here
+                body = ''.join(self.nodeToJs(n, flags.copy() + [Flags.METHOD]) for n in node.body)
                 return f'{func}({args}){{{body}}};'
             elif Flags.CLASS in flags:
                 args = ','.join(node.args[1:])
