@@ -30,10 +30,12 @@ class Transpiler:
         self.code += 'function abs(x){return Math.abs(x);};'
         self.code += 'function all(x){for(var i of x){if(!i){return False;}};return True;};'
         self.code += 'function any(x){for(var i of x){if(i){return True;}};return False;};'
+        self.code += 'function chr(x){return String.fromCharCode(x);};'
         self.code += 'function int(x){return Math.floor(x);};'
         self.code += 'function len(x){return x.length;};'
         self.code += 'function max(x){var m=x[0];var i=0;while((i<x.length)){if((x[i]>m)){var m=x[i];};i+=1;};return m;};'
         self.code += 'function min(x){var m=x[0];var i=0;while((i<x.length)){if((x[i]<m)){var m=x[i];};i+=1;};return m;};'
+        self.code += 'function ord(x){return x.charCodeAt(0);};'
         self.code += 'function print(x){console.log(x);};'
         self.code += 'function range(n){var a=[];var i=0;while((i<n)){a.push(i);i+=1;};return a;};'
         self.code += 'function str(n){return String(n);};'
@@ -92,7 +94,11 @@ class Transpiler:
             if Flags.CLASS in flags and func == '__init__':
                 args = ','.join(node.args[1:])
                 body = ''.join(self.nodeToJs(n, flags.copy() + [Flags.METHOD]) for n in node.body)
-                return f'{func}({args}){{{body}}};'
+                return f'constructor({args}){{{body}}};'
+            elif Flags.METHOD in flags:
+                args = ','.join(node.args)
+                body = ''.join(self.nodeToJs(n, flags.copy() + [Flags.METHOD]) for n in node.body)
+                return f'function {func}({args}){{{body}}};'
             elif Flags.CLASS in flags:
                 args = ','.join(node.args[1:])
                 body = ''.join(self.nodeToJs(n, flags.copy() + [Flags.METHOD]) for n in node.body)
