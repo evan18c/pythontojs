@@ -48,9 +48,9 @@ class Transpiler:
     
     # Converts node to JavaScript
     # Optional flags parameter to pass to objects that may need it
-    def nodeToJs(self, node: Node, flags: list):
+    def nodeToJs(self, node: Node, flags: list) -> str:
 
-        # === Helpers === 
+        # === Operators === 
         operators = {
             TokenSubtypes.OPERATOR_EQUAL: '=',
             TokenSubtypes.OPERATOR_ADD: '+',
@@ -75,6 +75,14 @@ class Transpiler:
             TokenSubtypes.OPERATOR_AND: '&&',
             TokenSubtypes.OPERATOR_OR: '||'
         }
+
+        # === Python -> JavaScript mappings ===
+        def map(val: str) -> str:
+            maps = {
+                'self': 'this',
+                'append': 'push'
+            }
+            return maps.get(val, val)
 
         # === None ===
         if node is None:
@@ -170,12 +178,8 @@ class Transpiler:
             return f'{new}{func}({args})' + (';' if node.statement else '')
         
         if node.type == Nodes.ACCESS:
-            obj = self.nodeToJs(node.obj, flags.copy())
-            if obj == 'self' and Flags.CLASS in flags:
-                obj = 'this'
-            attr = node.attr
-            if attr == 'append': # add dict for this
-                attr = 'push'
+            obj = map(self.nodeToJs(node.obj, flags.copy()))
+            attr = map(node.attr)
             return f'{obj}.{attr}' + (';' if node.statement else '')
         
         if node.type == Nodes.INDEX:
