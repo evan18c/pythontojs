@@ -171,7 +171,8 @@ class Parser:
         if (self.pos + n) < len(self.tokens):
             return self.tokens[self.pos + n]
         else:
-            return self.tokens[-1]
+            input('No more tokens!')
+            # return self.tokens[-1]
     
     def consume(self) -> Token:
         token = self.peek()
@@ -258,6 +259,7 @@ class Parser:
     def ParseExpressionLevelZero(self) -> Node:
 
         # Vars
+        self.SkipEOLTAB()
         token = self.consume()
         node = None
 
@@ -271,7 +273,9 @@ class Parser:
             while self.peek().subtype != TokenSubtypes.DELIMITER_RSQUARE:
                 if len(arr) != 0:
                     self.consume() # ,
+                self.SkipEOLTAB()
                 arr.append(self.ParseExpression())
+                self.SkipEOLTAB()
             self.consume() # ]
             node = NodeList(arr)
 
@@ -281,10 +285,13 @@ class Parser:
             while self.peek().subtype != TokenSubtypes.DELIMITER_RBRACE:
                 if len(dict_) != 0:
                     self.consume() # ,
+                self.SkipEOLTAB()
                 key = self.ParseExpression()
                 self.consume() # :
                 val = self.ParseExpression()
+                self.SkipEOLTAB()
                 dict_[key] = val
+                print(dict_)
             self.consume() # }
             node = NodeDict(dict_)
         
@@ -307,7 +314,9 @@ class Parser:
                 els = [node]
                 while self.peek().subtype != TokenSubtypes.DELIMITER_RPAREN:
                     self.consume() # ,
+                    self.SkipEOLTAB()
                     els.append(self.ParseExpression())
+                    self.SkipEOLTAB()
                 node = NodeTuple(els)
 
             self.consume() # )
@@ -322,14 +331,18 @@ class Parser:
                 while self.peek().subtype != TokenSubtypes.DELIMITER_RPAREN:
                     if len(args) != 0:
                         self.consume() # ,
+                    self.SkipEOLTAB()
                     args.append(self.ParseExpression())
+                    self.SkipEOLTAB()
                 self.consume() # )
                 node = NodeCall(node, args)
 
             # Access
             if self.peek().subtype == TokenSubtypes.DELIMITER_LSQUARE:
                 self.consume() # [
+                self.SkipEOLTAB()
                 index = self.ParseExpression()
+                self.SkipEOLTAB()
                 self.consume() # ]
                 return NodeIndex(node, index)
             
@@ -642,4 +655,14 @@ class Parser:
     # Helper Function: skips over every EOL token
     def SkipEOL(self) -> None:
         while self.peek().type == TokenTypes.EOL:
+            self.consume()
+
+    # Helper Function: skips over every TAB token
+    def SkipTAB(self) -> None:
+        while self.peek().type == TokenSubtypes.DELIMITER_TAB:
+            self.consume()
+
+    # Helper Function: skips over all TAB or EOL tokens
+    def SkipEOLTAB(self) -> None:
+        while self.peek().type == TokenTypes.EOL or self.peek().subtype == TokenSubtypes.DELIMITER_TAB:
             self.consume()
