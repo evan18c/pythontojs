@@ -17,20 +17,38 @@ To use it, import `Compiler` and call `Compile` on your code.
 ```py
 import Compiler
 
-code = '''
-def fact(x):
-    if x == 1:
-        return 1
-    else:
-        return x * fact(x - 1)
-
-console.log('The first 10 factorials are:')
-for i in range(10):
-    console.log(fact(i+1))
-'''
+code = open('script.py').read()
 
 print(Compiler.Compile(code))
 ```
+with
+```py
+from JavaScript import *
+
+def randint(min, max):
+    return Math.round(Math.random() * (max - min) + min)
+
+def main():
+
+    canvas = document.createElement('canvas')
+    canvas.width = 512
+    canvas.height = 512
+
+    ctx = canvas.getContext('2d')
+
+    ctx.fillStyle = 'white'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+    for _ in range(10):
+        ctx.moveTo(randint(0, 512), randint(0, 512))
+        ctx.lineTo(randint(0, 512), randint(0, 512))
+        ctx.stroke()
+
+    document.body.appendChild(canvas)
+
+main()
+```
+This code creates a canvas and draws 10 random lines to it.
 
 ## Work In Progress
-This project is still a WIP so there are still bugs.
+This project is a WIP so there will be bugs, please report any you find! :)
