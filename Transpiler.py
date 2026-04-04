@@ -169,7 +169,7 @@ class Transpiler:
             left = self.nodeToJs(node.left, flags.copy())
             op = operators[node.operation]
             right = self.nodeToJs(node.right, flags.copy())
-            return f'{left}{op}{right}' + (';' if node.statement else '')
+            return f'({left}{op}{right})' + (';' if node.statement else '')
         
         if node.type == Nodes.CALL:
             func = self.nodeToJs(node.func, flags.copy())
