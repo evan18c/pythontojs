@@ -249,7 +249,7 @@ class Parser:
         raise SyntaxError(f'Unexpected [{self.peek().type}.{self.peek().subtype}] at Line {self.peek().line}')
         
     def ParseExpression(self) -> Node:
-        return self.ParseExpressionLevelThree()
+        return self.ParseExpressionLevelFour()
 
     
     # ========== EXPRESSIONS ========== #
@@ -391,11 +391,25 @@ class Parser:
         node = self.ParseExpressionLevelTwo()
 
         while self.peek().subtype in [
-            TokenSubtypes.OPERATOR_EQUAL,
             TokenSubtypes.OPERATOR_ADD,
             TokenSubtypes.OPERATOR_SUBTRACT,
             TokenSubtypes.OPERATOR_ADDEQUAL,
             TokenSubtypes.OPERATOR_SUBTRACTEQUAL,
+        ]:
+            left = node
+            op = self.consume().subtype
+            right = self.ParseExpressionLevelTwo()
+            node = NodeBinary(left, op, right)
+
+        return node
+    
+    # = < > <= >= != == in and or parsed here
+    def ParseExpressionLevelFour(self) -> Node:
+
+        node = self.ParseExpressionLevelThree()
+
+        while self.peek().subtype in [
+            TokenSubtypes.OPERATOR_EQUAL,
             TokenSubtypes.OPERATOR_LESS,
             TokenSubtypes.OPERATOR_GREATER,
             TokenSubtypes.OPERATOR_LESSEQUAL,
@@ -408,7 +422,7 @@ class Parser:
         ]:
             left = node
             op = self.consume().subtype
-            right = self.ParseExpressionLevelTwo()
+            right = self.ParseExpressionLevelThree()
             node = NodeBinary(left, op, right)
 
         return node
