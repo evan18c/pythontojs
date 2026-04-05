@@ -342,7 +342,7 @@ class Parser:
                 index = self.ParseExpression()
                 self.SkipEOLTAB()
                 self.consume() # ]
-                return NodeIndex(node, index)
+                node = NodeIndex(node, index)
             
             # Access 
             if self.peek().subtype == TokenSubtypes.DELIMITER_DOT:
