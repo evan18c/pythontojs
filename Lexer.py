@@ -213,7 +213,10 @@ class Lexer:
             return val[0] == val[-1] == chr(39)
             
         def is_fstring(val):
-            return val[0] == 'f' and val[1] == val[-1] == chr(39)
+            if len(val) < 3:
+                return False
+            else:
+                return val[0] == 'f' and val[1] == val[-1] == chr(39)
         
         def is_integer(val):
             return val.lstrip('+-').isdigit()

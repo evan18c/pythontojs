@@ -511,10 +511,15 @@ class Parser:
         while self.peek().subtype != TokenSubtypes.DELIMITER_RPAREN:
             if len(args) != 0:
                 self.consume() # ,
-            args.append(self.consume().value)
-            if self.peek().subtype == TokenSubtypes.DELIMITER_COLON:
+            arg = self.consume().value
+            if self.peek().subtype == TokenSubtypes.DELIMITER_COLON: # types
                 self.consume() # :
                 self.consume() # type
+            if self.peek().subtype == TokenSubtypes.OPERATOR_EQUAL: # default values
+                self.consume() # =
+                val = self.consume().value
+                arg += f'={val}'
+            args.append(arg)
         
         self.consume() # )
 
