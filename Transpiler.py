@@ -124,7 +124,12 @@ class Transpiler:
             cond = self.nodeToJs(node.cond, flags.copy())
             body = ''.join(self.nodeToJs(n, flags.copy()) for n in node.body)
             else_body = ''.join(self.nodeToJs(n, flags.copy()) for n in node.else_body)
-            return f'if({cond}){{{body}}}else{{{else_body}}};'
+            elifs = ''
+            for elif_ in node.elif_conds_bodies:
+                elif_cond = self.nodeToJs(elif_[0], flags.copy())
+                elif_body = ''.join(self.nodeToJs(n, flags.copy()) for n in elif_[1])
+                elifs += f'else if({elif_cond}){{{elif_body}}}'
+            return f'if({cond}){{{body}}}{elifs}else{{{else_body}}};'
         
         if node.type == Nodes.WHILE:
             cond = node.cond

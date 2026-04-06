@@ -62,10 +62,11 @@ class NodeReturn(Node):
         self.expr = expr
 
 class NodeIf(Node):
-    def __init__(self, cond: Node, body: list[Node], else_body: list[Node]):
+    def __init__(self, cond: Node, body: list[Node], elif_conds_bodies: list[tuple], else_body: list[Node]):
         super().__init__(Nodes.IF, True)
         self.cond = cond
         self.body = body
+        self.elif_conds_bodies = elif_conds_bodies
         self.else_body = else_body
 
 class NodeWhile(Node):
@@ -531,6 +532,28 @@ class Parser:
             self.SkipEOL()
         self.indents -= 1
 
+        # Check for ELIFs
+        elif_conds_bodies = []
+        while self.GetLeadingTabs() == self.indents and self.peek(self.indents).subtype == TokenSubtypes.KEYWORD_ELIF:
+            elif_cond = None
+            elif_body = []
+            for _ in range(self.indents):
+                self.consume() # consume the tabs
+            self.consume() # elif
+            elif_cond = self.ParseExpression()
+            self.consume() # :
+            self.SkipComment()
+            self.consume() # new line
+            self.indents += 1
+            while self.GetLeadingTabs() == self.indents:
+                for _ in range(self.indents):
+                    self.consume() # consume the tabs
+                elif_body.append(self.ParseStatement())
+                self.SkipComment()
+                self.SkipEOL()
+            self.indents -= 1
+            elif_conds_bodies.append((elif_cond, elif_body))
+
         # Check for ELSE
         else_body = []
         if self.GetLeadingTabs() == self.indents and self.peek(self.indents).subtype == TokenSubtypes.KEYWORD_ELSE:
@@ -549,7 +572,7 @@ class Parser:
                 self.SkipEOL()
             self.indents -= 1
 
-        return NodeIf(cond, body, else_body)
+        return NodeIf(cond, body, elif_conds_bodies, else_body)
     
     def ParseWhile(self) -> Node:
 
