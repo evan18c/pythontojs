@@ -51,7 +51,7 @@ main()
 This code creates a canvas and draws 10 random lines to it.
 
 ## Demo
-A compiled version of this project can be tested [here]().<br>
+A compiled version of this project can be tested [here](https://evan18c.github.io/pythontojs/demo/).<br>
 Please be aware that the compiled version is even more unstable.
 
 ## Notes
