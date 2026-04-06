@@ -251,7 +251,7 @@ class Parser:
         raise SyntaxError(f'Unexpected {self.peek()}')
         
     def ParseExpression(self) -> Node:
-        return self.ParseExpressionLevelFour()
+        return self.ParseExpressionLevelSeven()
 
     
     # ========== EXPRESSIONS ========== #
@@ -386,10 +386,7 @@ class Parser:
             TokenSubtypes.OPERATOR_EXPONENT,
             TokenSubtypes.OPERATOR_MULTIPLY,
             TokenSubtypes.OPERATOR_DIVIDE,
-            TokenSubtypes.OPERATOR_MODULO,
-            TokenSubtypes.OPERATOR_MULTIPLYEQUAL,
-            TokenSubtypes.OPERATOR_DIVIDEEQUAL,
-            TokenSubtypes.OPERATOR_MODULOEQUAL
+            TokenSubtypes.OPERATOR_MODULO
         ]:
             left = node
             op = self.consume().subtype
@@ -405,9 +402,7 @@ class Parser:
 
         while self.peek().subtype in [
             TokenSubtypes.OPERATOR_ADD,
-            TokenSubtypes.OPERATOR_SUBTRACT,
-            TokenSubtypes.OPERATOR_ADDEQUAL,
-            TokenSubtypes.OPERATOR_SUBTRACTEQUAL,
+            TokenSubtypes.OPERATOR_SUBTRACT
         ]:
             left = node
             op = self.consume().subtype
@@ -416,26 +411,73 @@ class Parser:
 
         return node
     
-    # = < > <= >= != == in and or parsed here
+    # comparison parsed here
     def ParseExpressionLevelFour(self) -> Node:
 
         node = self.ParseExpressionLevelThree()
 
         while self.peek().subtype in [
-            TokenSubtypes.OPERATOR_EQUAL,
             TokenSubtypes.OPERATOR_LESS,
             TokenSubtypes.OPERATOR_GREATER,
             TokenSubtypes.OPERATOR_LESSEQUAL,
             TokenSubtypes.OPERATOR_GREATEREQUAL,
             TokenSubtypes.OPERATOR_NOTEQUAL,
-            TokenSubtypes.OPERATOR_EQUALEQUAL,
-            TokenSubtypes.OPERATOR_IN,
-            TokenSubtypes.OPERATOR_AND,
-            TokenSubtypes.OPERATOR_OR
+            TokenSubtypes.OPERATOR_EQUALEQUAL
         ]:
             left = node
             op = self.consume().subtype
             right = self.ParseExpressionLevelThree()
+            node = NodeBinary(left, op, right)
+
+        return node
+    
+    # and parsed here
+    def ParseExpressionLevelFive(self) -> Node:
+
+        node = self.ParseExpressionLevelFour()
+
+        while self.peek().subtype in [
+            TokenSubtypes.OPERATOR_AND
+        ]:
+            left = node
+            op = self.consume().subtype
+            right = self.ParseExpressionLevelFour()
+            node = NodeBinary(left, op, right)
+
+        return node
+    
+    # or parsed here
+    def ParseExpressionLevelSix(self) -> Node:
+
+        node = self.ParseExpressionLevelFive()
+
+        while self.peek().subtype in [
+            TokenSubtypes.OPERATOR_OR
+        ]:
+            left = node
+            op = self.consume().subtype
+            right = self.ParseExpressionLevelFive()
+            node = NodeBinary(left, op, right)
+
+        return node
+    
+    # Equality parsed here
+    def ParseExpressionLevelSeven(self) -> Node:
+
+        node = self.ParseExpressionLevelSix()
+
+        while self.peek().subtype in [
+            TokenSubtypes.OPERATOR_IN,
+            TokenSubtypes.OPERATOR_EQUAL,
+            TokenSubtypes.OPERATOR_ADDEQUAL,
+            TokenSubtypes.OPERATOR_SUBTRACTEQUAL,
+            TokenSubtypes.OPERATOR_MULTIPLYEQUAL,
+            TokenSubtypes.OPERATOR_DIVIDEEQUAL,
+            TokenSubtypes.OPERATOR_MODULOEQUAL
+        ]:
+            left = node
+            op = self.consume().subtype
+            right = self.ParseExpressionLevelSix()
             node = NodeBinary(left, op, right)
 
         return node
