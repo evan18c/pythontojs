@@ -136,7 +136,7 @@ class Lexer:
             else:
                 cons_space = 0
 
-            if char == chr(39): # '
+            if char == chr(39):
                 bs = not bs
 
             if cons_space == 4:
@@ -210,16 +210,10 @@ class Lexer:
 
         # string integer float bool
         def is_string(val):
-            if val[0] == val[-1] == chr(39): # '
-                return True
-            else:
-                return False
+            return val[0] == val[-1] == chr(39)
             
         def is_fstring(val):
-            if val[0] == 'f' and val[1] == val[-1] == chr(39): # '
-                return True
-            else:
-                return False
+            return val[0] == 'f' and val[1] == val[-1] == chr(39)
         
         def is_integer(val):
             return val.lstrip('+-').isdigit()
@@ -276,10 +270,7 @@ class Lexer:
                 elif is_bool(token.value):
                     token.type = TokenTypes.LITERAL
                     token.subtype = TokenSubtypes.LITERAL_BOOL
-                    if token.value == 'True':
-                        token.value = True
-                    else:
-                        token.value = False
+                    token.value = token.value == 'True'
 
                 else:
                     token.type = TokenTypes.IDENTIFIER
