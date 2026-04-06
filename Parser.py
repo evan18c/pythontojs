@@ -24,6 +24,7 @@ class Nodes:
     ACCESS = 'ACCESS'
     INDEX = 'INDEX'
     UNARY = 'UNARY'
+    COMPREHENSION = 'COMPREHENSION'
 
     # Objects
     LITERAL = 'LITERAL'
@@ -117,6 +118,13 @@ class NodeUnary(Node):
         super().__init__(Nodes.UNARY, False)
         self.operand = operand
         self.operation = operation
+
+class NodeComprehension(Node):
+    def __init__(self, expr: Node, var: str, iter: Node):
+        super().__init__(Nodes.COMPREHENSION, False)
+        self.expr = expr
+        self.var = var
+        self.iter = iter
 
 class NodeCall(Node):
     def __init__(self, func: Node, args: list[Node]):
@@ -363,6 +371,14 @@ class Parser:
                 attr = self.consume().value
                 node = NodeAccess(node, attr)
             
+        # List Comprehension expr var iter
+        if self.peek().subtype == TokenSubtypes.KEYWORD_FOR:
+            self.consume() # for
+            var = self.consume().value
+            self.consume() # in
+            iter = self.ParseExpression()
+            node = NodeComprehension(node, var, iter)
+
         # Return
         return node
 

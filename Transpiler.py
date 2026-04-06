@@ -197,6 +197,12 @@ class Transpiler:
             operand = self.nodeToJs(node.operand, flags.copy())
             op = operators[node.operation]
             return f'{op}{operand}' + (';' if node.statement else '')
+        
+        if node.type == Nodes.COMPREHENSION:
+            expr = self.nodeToJs(node.expr, flags.copy())
+            var = node.var
+            iter = self.nodeToJs(node.iter, flags.copy())
+            return f'(()=>{{var __res=[];for(var {var} in {iter}){{__res.push({expr});}}return __res;}})();'
 
 
         # === Objects ===
