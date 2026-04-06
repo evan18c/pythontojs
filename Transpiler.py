@@ -31,6 +31,7 @@ class Transpiler:
         self.code += 'function all(x){for(var i of x){if(!i){return False;}};return True;};'
         self.code += 'function any(x){for(var i of x){if(i){return True;}};return False;};'
         self.code += 'function chr(x){return String.fromCharCode(x);};'
+        self.code += 'function float(x){return parseFloat(x);};'
         self.code += 'function int(x){return Math.floor(x);};'
         self.code += 'function len(x){return x.length;};'
         self.code += 'function max(x){var m=x[0];var i=0;while((i<x.length)){if((x[i]>m)){var m=x[i];};i+=1;};return m;};'
