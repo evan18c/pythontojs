@@ -50,5 +50,8 @@ main()
 ```
 This code creates a canvas and draws 10 random lines to it.
 
-## Work In Progress
-This project is a WIP so there will be bugs, please report any you find! :)
+## Demo
+A compiled version of this project can be tested [here]().
+
+## Notes
+This project is mostly a proof of concept and supports only a subset of Python.

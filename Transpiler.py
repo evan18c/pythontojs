@@ -202,14 +202,14 @@ class Transpiler:
             expr = self.nodeToJs(node.expr, flags.copy())
             var = node.var
             iter = self.nodeToJs(node.iter, flags.copy())
-            return f'(()=>{{var __res=[];for(var {var} in {iter}){{__res.push({expr});}}return __res;}})();'
+            return f'(()=>{{var __res=[];for(var {var} of {iter}){{__res.push({expr});}}return __res;}})()' + (';' if node.statement else '')
 
 
         # === Objects ===
         if node.type == Nodes.LITERAL:
             if node.value_type == TokenSubtypes.LITERAL_FSTRING:
                 value = node.value
-                return f'`{value[2:-1]}`'.replace('{', '${')
+                return f'{chr(96)}{value[2:-1]}{chr(96)}'.replace('{', '${').replace('${${','{').replace('}}','}')
             else:
                 value = node.value
                 return f'{value}'

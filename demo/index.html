@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="compiler.js"></script>
+    <script src="python.js"></script>
+    <script src="demo.js"></script>
+</head>
+<body>
+    <header>
+        <h1>py2js</h1>
+    </header>
+    <div class="container">
+        <div class="panel">
+            <textarea id="pythonInput" spellcheck="false">def f():
+    for i in range(10):
+        print(i)
+
+f()</textarea>
+        </div>
+        <div class="center">
+            <button onclick="demo()">Run<br>→</button>
+        </div>
+        <div class="panel">
+            <div id="console" class="console"></div>
+        </div>
+    </div>
+</body>
+</html>

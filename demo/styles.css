@@ -1,0 +1,67 @@
+/* ========== TAGS ========== */
+
+* {
+    margin: 0px 0px;
+}
+
+body {
+    background-color: #111111;
+}
+
+header {
+    background-color: #222222;
+    border-bottom: 1px solid #444444;
+    color: #FFFFFF;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+h1 {
+    padding: 25px;
+}
+
+textarea {
+    background-color: #22272E;
+    color: #FFFFFF;
+    font-family: monospace;
+    font-size: 14px;
+    height: 100%;
+    resize: none;
+    width: 100%;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* ========== CLASSES ========== */
+
+.container {
+    display: flex;
+    height: 500px;
+    width: 100%;
+}
+
+.center {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    width: 120px;
+}
+
+.panel {
+    flex: 1;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.console {
+    background: black;
+    color: lime;
+    font-family: monospace;
+    font-size: 14px;
+    height: 100%;
+    overflow-y: auto;
+    padding: 10px;
+}
