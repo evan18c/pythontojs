@@ -135,7 +135,7 @@ class Lexer:
             else:
                 cons_space = 0
 
-            if char == "'":
+            if char == chr(39): # '
                 bs = not bs
 
             if cons_space == 4:
@@ -209,7 +209,7 @@ class Lexer:
 
         # string integer float bool
         def is_string(val):
-            if val[0] == val[-1] == "'":
+            if val[0] == val[-1] == chr(39): # '
                 return True
             else:
                 return False
@@ -250,7 +250,7 @@ class Lexer:
                     token.type = TokenTypes.LITERAL
                     token.subtype = TokenSubtypes.LITERAL_STRING
                     token.value = token.value
-                
+
                 elif is_integer(token.value):
                     token.type = TokenTypes.LITERAL
                     token.subtype = TokenSubtypes.LITERAL_INTEGER
@@ -264,7 +264,10 @@ class Lexer:
                 elif is_bool(token.value):
                     token.type = TokenTypes.LITERAL
                     token.subtype = TokenSubtypes.LITERAL_BOOL
-                    token.value = True if token.value == 'True' else False
+                    if token.value == 'True':
+                        token.value = True
+                    else:
+                        token.value = False
 
                 else:
                     token.type = TokenTypes.IDENTIFIER
