@@ -33,6 +33,7 @@ class TokenSubtypes:
     LITERAL_FLOAT = 'FLOAT'
     LITERAL_BOOL = 'BOOL'
     LITERAL_NONE = 'NONE'
+    LITERAL_FSTRING = 'FSTRING'
 
     OPERATOR_EQUAL = 'EQUAL'
     OPERATOR_ADD = 'ADD'
@@ -213,6 +214,12 @@ class Lexer:
                 return True
             else:
                 return False
+            
+        def is_fstring(val):
+            if val[0] == 'f' and val[1] == val[-1] == chr(39): # '
+                return True
+            else:
+                return False
         
         def is_integer(val):
             return val.lstrip('+-').isdigit()
@@ -249,6 +256,11 @@ class Lexer:
                 elif is_string(token.value):
                     token.type = TokenTypes.LITERAL
                     token.subtype = TokenSubtypes.LITERAL_STRING
+                    token.value = token.value
+
+                elif is_fstring(token.value):
+                    token.type = TokenTypes.LITERAL
+                    token.subtype = TokenSubtypes.LITERAL_FSTRING
                     token.value = token.value
 
                 elif is_integer(token.value):

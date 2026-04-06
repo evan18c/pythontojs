@@ -137,9 +137,10 @@ class NodeIndex(Node):
         self.index = index
 
 class NodeLiteral(Node):
-    def __init__(self, value):
+    def __init__(self, value, value_type: TokenSubtypes):
         super().__init__(Nodes.LITERAL, False)
         self.value = value
+        self.value_type = value_type
 
 class NodeIdentifier(Node):
     def __init__(self, id: str):
@@ -266,7 +267,7 @@ class Parser:
 
         # Literal
         if token.type == TokenTypes.LITERAL:
-            node = NodeLiteral(token.value)
+            node = NodeLiteral(token.value, token.subtype)
 
         # Array
         if token.subtype == TokenSubtypes.DELIMITER_LSQUARE:

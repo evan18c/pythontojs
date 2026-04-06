@@ -200,8 +200,12 @@ class Transpiler:
 
         # === Objects ===
         if node.type == Nodes.LITERAL:
-            value = node.value
-            return f'{value}'
+            if node.value_type == TokenSubtypes.LITERAL_FSTRING:
+                value = node.value
+                return f'`{value[2:-1]}`'.replace('{', '${')
+            else:
+                value = node.value
+                return f'{value}'
 
         if node.type == Nodes.IDENTIFIER:
             id = node.id
