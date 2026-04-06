@@ -246,7 +246,7 @@ class Parser:
             return None
 
         # Unknown Statement
-        raise SyntaxError(f'Unexpected [{self.peek().type}.{self.peek().subtype}] at Line {self.peek().line}')
+        raise SyntaxError(f'Unexpected {self.peek()}')
         
     def ParseExpression(self) -> Node:
         return self.ParseExpressionLevelFour()
@@ -258,6 +258,7 @@ class Parser:
     def ParseExpressionLevelZero(self) -> Node:
 
         # Vars
+        self.SkipComment()
         self.SkipEOLTAB()
         token = self.consume()
         node = None
@@ -272,8 +273,10 @@ class Parser:
             while self.peek().subtype != TokenSubtypes.DELIMITER_RSQUARE:
                 if len(arr) != 0:
                     self.consume() # ,
+                self.SkipComment()
                 self.SkipEOLTAB()
                 arr.append(self.ParseExpression())
+                self.SkipComment()
                 self.SkipEOLTAB()
             self.consume() # ]
             node = NodeList(arr)
@@ -284,10 +287,12 @@ class Parser:
             while self.peek().subtype != TokenSubtypes.DELIMITER_RBRACE:
                 if len(dict_) != 0:
                     self.consume() # ,
+                self.SkipComment()
                 self.SkipEOLTAB()
                 key = self.ParseExpression()
                 self.consume() # :
                 val = self.ParseExpression()
+                self.SkipComment()
                 self.SkipEOLTAB()
                 dict_[key] = val
             self.consume() # }
@@ -312,8 +317,10 @@ class Parser:
                 els = [node]
                 while self.peek().subtype != TokenSubtypes.DELIMITER_RPAREN:
                     self.consume() # ,
+                    self.SkipComment()
                     self.SkipEOLTAB()
                     els.append(self.ParseExpression())
+                    self.SkipComment()
                     self.SkipEOLTAB()
                 node = NodeTuple(els)
 
@@ -329,8 +336,10 @@ class Parser:
                 while self.peek().subtype != TokenSubtypes.DELIMITER_RPAREN:
                     if len(args) != 0:
                         self.consume() # ,
+                    self.SkipComment()
                     self.SkipEOLTAB()
                     args.append(self.ParseExpression())
+                    self.SkipComment()
                     self.SkipEOLTAB()
                 self.consume() # )
                 node = NodeCall(node, args)
@@ -338,8 +347,10 @@ class Parser:
             # Access
             if self.peek().subtype == TokenSubtypes.DELIMITER_LSQUARE:
                 self.consume() # [
+                self.SkipComment()
                 self.SkipEOLTAB()
                 index = self.ParseExpression()
+                self.SkipComment()
                 self.SkipEOLTAB()
                 self.consume() # ]
                 node = NodeIndex(node, index)
@@ -438,6 +449,8 @@ class Parser:
 
         expr = self.ParseExpression()
 
+        self.SkipComment()
+
         self.consume() # new line
 
         return NodeAssignment(var, expr)
@@ -467,6 +480,8 @@ class Parser:
         
         self.consume() # :
 
+        self.SkipComment()
+
         self.SkipEOL() # new lines
 
         self.indents += 1
@@ -475,6 +490,7 @@ class Parser:
             for _ in range(self.indents):
                 self.consume() # consume the tabs
             body.append(self.ParseStatement())
+            self.SkipComment()
             self.SkipEOL()
         self.indents -= 1
 
@@ -485,6 +501,8 @@ class Parser:
         self.consume() # return
 
         expr = self.ParseExpression()
+
+        self.SkipComment()
 
         self.consume() # new line
 
@@ -498,6 +516,8 @@ class Parser:
 
         self.consume() # :
 
+        self.SkipComment()
+
         self.SkipEOL() # new lines
 
         # Parse Body
@@ -507,6 +527,7 @@ class Parser:
             for _ in range(self.indents):
                 self.consume() # consume the tabs
             body.append(self.ParseStatement())
+            self.SkipComment()
             self.SkipEOL()
         self.indents -= 1
 
@@ -517,12 +538,14 @@ class Parser:
                 self.consume() # consume the tabs
             self.consume() # else
             self.consume() # :
+            self.SkipComment()
             self.consume() # new line
             self.indents += 1
             while self.GetLeadingTabs() == self.indents:
                 for _ in range(self.indents):
                     self.consume() # consume the tabs
                 else_body.append(self.ParseStatement())
+                self.SkipComment()
                 self.SkipEOL()
             self.indents -= 1
 
@@ -536,6 +559,8 @@ class Parser:
 
         self.consume() # :
 
+        self.SkipComment()
+
         self.SkipEOL() # new lines
 
         # Parse Body
@@ -545,6 +570,7 @@ class Parser:
             for _ in range(self.indents):
                 self.consume() # consume the tabs
             body.append(self.ParseStatement())
+            self.SkipComment()
             self.SkipEOL()
         self.indents -= 1
 
@@ -554,6 +580,8 @@ class Parser:
         
         node = self.ParseExpressionLevelZero()
 
+        self.SkipComment()
+
         self.consume() # new line
 
         node.statement = True
@@ -562,8 +590,7 @@ class Parser:
     
     def ParseComment(self) -> Node:
 
-        while self.peek().type != TokenTypes.EOL:
-            self.consume()
+        self.SkipComment()
 
         self.consume() # EOL
 
@@ -572,6 +599,8 @@ class Parser:
     def ParseStatementBinary(self) -> Node:
 
         node = self.ParseExpression()
+
+        self.SkipComment()
 
         self.consume() # new line
 
@@ -587,6 +616,8 @@ class Parser:
 
         self.consume() # :
 
+        self.SkipComment()
+
         self.SkipEOL() # new lines
 
         # Parse Body
@@ -596,6 +627,7 @@ class Parser:
             for _ in range(self.indents):
                 self.consume() # consume the tabs
             body.append(self.ParseStatement())
+            self.SkipComment()
             self.SkipEOL()
         self.indents -= 1
 
@@ -605,6 +637,8 @@ class Parser:
     def ParseExpressionStatement(self) -> Node:
         
         node = self.ParseExpression()
+
+        self.SkipComment()
 
         self.consume() # new line
 
@@ -624,6 +658,8 @@ class Parser:
 
         self.consume() # :
 
+        self.SkipComment()
+
         self.SkipEOL() # new lines
 
         # Parse Body
@@ -633,6 +669,7 @@ class Parser:
             for _ in range(self.indents):
                 self.consume() # consume the tabs
             body.append(self.ParseStatement())
+            self.SkipComment()
             self.SkipEOL()
         self.indents -= 1
 
@@ -652,6 +689,7 @@ class Parser:
     
     def ParseContinue(self) -> Node:
         self.consume() # continue
+        self.SkipComment()
         self.consume() # new line
         return NodeContinue()
 
@@ -673,6 +711,14 @@ class Parser:
     def SkipTAB(self) -> None:
         while self.peek().type == TokenSubtypes.DELIMITER_TAB:
             self.consume()
+
+    # Helper Function: skips over a comment if there is one
+    def SkipComment(self) -> None:
+        if self.peek().subtype == TokenSubtypes.DELIMITER_COMMENT:
+            self.consume()
+            while self.peek().type != TokenTypes.EOL:
+                self.consume()
+
 
     # Helper Function: skips over all TAB or EOL tokens
     def SkipEOLTAB(self) -> None:
